@@ -1,0 +1,14 @@
+{
+  "name": "kompli-api",
+  "version": "1.0.0",
+  "description": "Kompli API Scraper Service for Nigerian SME legal compliance",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "axios": "^1.6.8",
+    "cheerio": "^1.0.0-rc.12"
+  }
+}
