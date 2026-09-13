@@ -6,7 +6,9 @@ const app = express();
 app.use(express.json());
 
 app.all('/api/scrape/cac', cacHandler);
+app.all('/api/cac', cacHandler);
 app.all('/api/scrape/tin', tinHandler);
+app.all('/api/tin', tinHandler);
 
 app.get('/', (req, res) => {
   res.json({
