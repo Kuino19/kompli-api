@@ -1,0 +1,7 @@
+{
+  "version": 2,
+  "rewrites": [
+    { "source": "/api/scrape/cac", "destination": "/api/cac" },
+    { "source": "/api/scrape/tin", "destination": "/api/tin" }
+  ]
+}
