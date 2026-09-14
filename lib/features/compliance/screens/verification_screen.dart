@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:animate_do/animate_do.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../services/verification_service.dart';
 import '../../../services/billing_service.dart';
+import '../../../services/aml_service.dart';
 import '../../../core/widgets/premium_sheet.dart';
 
 class VerificationScreen extends StatefulWidget {
@@ -17,20 +19,24 @@ class _VerificationScreenState extends State<VerificationScreen> with SingleTick
   late TabController _tabController;
   final _cacController = TextEditingController();
   final _tinController = TextEditingController();
+  final _amlController = TextEditingController();
 
   bool _isCacLoading = false;
   bool _isTinLoading = false;
+  bool _isAmlLoading = false;
   
   Map<String, dynamic>? _cacResult;
   Map<String, dynamic>? _tinResult;
+  AmlScreeningResult? _amlResult;
 
   String? _cacError;
   String? _tinError;
+  String? _amlError;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
   }
 
   @override
@@ -38,6 +44,7 @@ class _VerificationScreenState extends State<VerificationScreen> with SingleTick
     _tabController.dispose();
     _cacController.dispose();
     _tinController.dispose();
+    _amlController.dispose();
     super.dispose();
   }
 
@@ -157,20 +164,52 @@ class _VerificationScreenState extends State<VerificationScreen> with SingleTick
     }
   }
 
+  Future<void> _verifyAML() async {
+    final query = _amlController.text.trim();
+    if (query.isEmpty) {
+      setState(() => _amlError = 'Please enter a person or director name to screen');
+      return;
+    }
+
+    setState(() {
+      _isAmlLoading = true;
+      _amlResult = null;
+      _amlError = null;
+    });
+
+    try {
+      final res = await AmlService().screenEntity(query);
+      FirebaseAnalytics.instance.logEvent(
+        name: 'aml_screened',
+        parameters: {'query': query, 'risk': res.riskLevel.name},
+      );
+      setState(() {
+        _amlResult = res;
+        _isAmlLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _amlError = e.toString().replaceAll('Exception:', '').trim();
+        _isAmlLoading = false;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,
       appBar: AppBar(
-        title: const Text('Verify Business Info'),
+        title: const Text('Verify Business & AML Info'),
         bottom: TabBar(
           controller: _tabController,
           labelColor: AppTheme.primaryGreen,
           unselectedLabelColor: AppTheme.textLight,
           indicatorColor: AppTheme.primaryGreen,
           tabs: const [
-            Tab(icon: Icon(Icons.business), text: 'CAC (Company)'),
-            Tab(icon: Icon(Icons.receipt_long), text: 'TIN (Tax ID)'),
+            Tab(icon: Icon(Icons.business), text: 'CAC Search'),
+            Tab(icon: Icon(Icons.receipt_long), text: 'FIRS TIN'),
+            Tab(icon: Icon(Icons.security), text: 'AML / NIGSAC'),
           ],
         ),
       ),
@@ -179,6 +218,7 @@ class _VerificationScreenState extends State<VerificationScreen> with SingleTick
         children: [
           _buildCacTab(),
           _buildTinTab(),
+          _buildAmlTab(),
         ],
       ),
     );
@@ -488,6 +528,206 @@ class _VerificationScreenState extends State<VerificationScreen> with SingleTick
               ],
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAmlTab() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(24.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'AML & Sanctions Screening (NIGSAC + UN)',
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppTheme.navyBlue),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Screen directors, beneficial owners, or entities against the Nigeria Sanctions List (NIGSAC under TPPA 2022) & UN Consolidated List.',
+            style: TextStyle(fontSize: 13, color: AppTheme.textLight, height: 1.5),
+          ),
+          const SizedBox(height: 24),
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _amlController,
+                  decoration: InputDecoration(
+                    hintText: 'e.g. Director or Entity Name',
+                    errorText: _amlError,
+                    prefixIcon: const Icon(Icons.security, color: Color(0xFFFFB300)),
+                  ),
+                  onSubmitted: (_) => _verifyAML(),
+                ),
+              ),
+              const SizedBox(width: 12),
+              SizedBox(
+                height: 56,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF0F172A),
+                  ),
+                  onPressed: _isAmlLoading ? null : _verifyAML,
+                  child: _isAmlLoading
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                        )
+                      : const Text('Screen AML'),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+          if (_amlResult != null) ...[
+            FadeInUp(
+              duration: const Duration(milliseconds: 400),
+              child: _buildAmlResultCard(_amlResult!),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAmlResultCard(AmlScreeningResult res) {
+    Color riskColor;
+    String riskTitle;
+    IconData riskIcon;
+
+    switch (res.riskLevel) {
+      case AmlRiskLevel.highRiskMatch:
+        riskColor = Colors.redAccent;
+        riskTitle = 'HIGH RISK — SANCTIONS MATCH DETECTED';
+        riskIcon = Icons.report_problem;
+        break;
+      case AmlRiskLevel.possibleMatch:
+        riskColor = const Color(0xFFFFB300);
+        riskTitle = 'POSSIBLE MATCH — REVIEW REQUIRED';
+        riskIcon = Icons.warning_amber_rounded;
+        break;
+      case AmlRiskLevel.clear:
+      default:
+        riskColor = AppTheme.primaryGreen;
+        riskTitle = 'CLEAR — NO SANCTIONS MATCH DETECTED';
+        riskIcon = Icons.verified_user;
+        break;
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: riskColor.withValues(alpha: 0.4), width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(riskIcon, color: riskColor, size: 28),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  riskTitle,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: riskColor,
+                    letterSpacing: 0.3,
+                  ),
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: riskColor.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  '${res.similarityScore.toStringAsFixed(0)}% Score',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: riskColor,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const Divider(height: 24),
+          Text(
+            'Screened Query: ${res.queryName}',
+            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppTheme.navyBlue),
+          ),
+          if (res.matchedName != null) ...[
+            const SizedBox(height: 6),
+            Text(
+              'Matched Entity: ${res.matchedName}',
+              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.redAccent),
+            ),
+            Text(
+              'Database Source: ${res.listSource} (${res.designationCategory})',
+              style: const TextStyle(fontSize: 12, color: AppTheme.textLight),
+            ),
+          ],
+          const SizedBox(height: 16),
+          const Text(
+            'Statutory Obligations under TPPA 2022:',
+            style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppTheme.navyBlue),
+          ),
+          const SizedBox(height: 8),
+          ...res.legalObligations.map(
+            (item) => Padding(
+              padding: const EdgeInsets.only(bottom: 6),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Icon(Icons.arrow_right, size: 18, color: AppTheme.primaryGreen),
+                  const SizedBox(width: 4),
+                  Expanded(
+                    child: Text(
+                      item,
+                      style: const TextStyle(fontSize: 12, color: AppTheme.textLight, height: 1.4),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          if (res.riskLevel != AmlRiskLevel.clear) ...[
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF0F172A),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+                onPressed: () {
+                  context.push('/chat');
+                },
+                icon: const Icon(Icons.auto_awesome, color: Color(0xFF00E676), size: 18),
+                label: const Text(
+                  'Ask AI Assistant for NFIU STR Reporting Steps →',
+                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );
