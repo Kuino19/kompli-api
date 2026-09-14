@@ -265,7 +265,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 const SizedBox(height: 40),
                 Center(
                   child: Text(
-                    'Built by Armmy Tech LTD',
+                    'Built by Goanitech LTD',
                     style: TextStyle(
                       fontSize: 12,
                       color: Colors.white.withValues(alpha: 0.3),
