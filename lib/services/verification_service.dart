@@ -125,12 +125,19 @@ class VerificationService {
       Uri.parse(endpoint),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode(body),
-    );
+    ).timeout(const Duration(seconds: 10));
+
     if (response.statusCode == 200) {
       final json = jsonDecode(response.body);
-      return json;
+      // Sanity check: Ensure response payload contains non-empty valid data map
+      if (json is Map<String, dynamic> && json.containsKey('data') && json['data'] is Map) {
+        final data = json['data'] as Map;
+        if (data.isNotEmpty && (data.containsKey('companyName') || data.containsKey('tin'))) {
+          return json;
+        }
+      }
     }
-    throw Exception('Scraper returned HTTP ${response.statusCode}');
+    throw Exception('Scraper payload validation failed (HTTP ${response.statusCode})');
   }
 
   // ─────────────────────────────────────────

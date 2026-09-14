@@ -10,11 +10,20 @@ app.all('/api/cac', cacHandler);
 app.all('/api/scrape/tin', tinHandler);
 app.all('/api/tin', tinHandler);
 
+app.get('/api/health', (req, res) => {
+  res.json({
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    service: 'Kompli Verification Engine (MVP)',
+    uptime: process.uptime(),
+  });
+});
+
 app.get('/', (req, res) => {
   res.json({
     name: 'Kompli API Scraper Service',
     status: 'Online',
-    endpoints: ['POST /api/scrape/cac', 'POST /api/scrape/tin']
+    endpoints: ['POST /api/scrape/cac', 'POST /api/scrape/tin', 'GET /api/health']
   });
 });
 
