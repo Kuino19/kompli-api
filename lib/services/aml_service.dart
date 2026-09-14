@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 enum AmlRiskLevel { clear, possibleMatch, highRiskMatch }
 
@@ -125,9 +127,10 @@ class AmlService {
       risk = AmlRiskLevel.highRiskMatch;
       obligations = [
         'TPPA 2022 s.54 Notice: Immediate asset freeze obligation applies.',
-        'File an Suspicious Transaction Report (STR) with the NFIU via portal.nfiu.gov.ng.',
-        'Submit written notification to the NIGSAC Secretariat within 24 hours.',
+        'File a Suspicious Transaction Report (STR) with NFIU via portal.nfiu.gov.ng.',
+        'Immediately submit written notification to the NIGSAC Secretariat (Sanctions Committee).',
         'Do NOT notify or tip off the designated subject (anti-tipping-off provision).',
+        'Note: Kompli provides automated screening guidance. Consult a qualified AML practitioner for legal reporting.',
       ];
     } else if (highestScore >= 60.0) {
       risk = AmlRiskLevel.possibleMatch;
@@ -135,6 +138,7 @@ class AmlService {
         'Enhanced Due Diligence (EDD) Required: Verify identity with official government ID.',
         'Obtain beneficial ownership declarations (Form CAC 1.1 / PSC filing).',
         'If suspicion persists, submit an NFIU STR report prior to completing transactions.',
+        'Note: Kompli provides automated screening guidance. Consult a qualified AML practitioner for legal reporting.',
       ];
     } else {
       risk = AmlRiskLevel.clear;
@@ -213,12 +217,22 @@ class AmlService {
 
   Future<void> _saveAuditLog(AmlScreeningResult result) async {
     try {
+      // 1. Local storage cache
       final prefs = await SharedPreferences.getInstance();
       final history = prefs.getStringList('aml_audit_history') ?? [];
       history.insert(0, jsonEncode(result.toJson()));
-      // Keep last 30 AML screening audit records
       if (history.length > 30) history.removeLast();
       await prefs.setStringList('aml_audit_history', history);
+
+      // 2. Audit-grade Cloud Firestore Backup
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .collection('aml_checks')
+            .add(result.toJson());
+      }
     } catch (e) {
       debugPrint('Error saving AML audit log: $e');
     }
