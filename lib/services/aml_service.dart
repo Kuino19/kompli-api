@@ -231,7 +231,8 @@ class AmlService {
             .collection('users')
             .doc(user.uid)
             .collection('aml_checks')
-            .add(result.toJson());
+            .add(result.toJson())
+            .timeout(const Duration(seconds: 2));
       }
     } catch (e) {
       debugPrint('Error saving AML audit log: $e');

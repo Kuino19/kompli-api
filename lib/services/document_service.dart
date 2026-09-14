@@ -130,7 +130,8 @@ class DocumentService {
             .doc(uid)
             .collection('documents')
             .orderBy('updatedAt', descending: true)
-            .get();
+            .get()
+            .timeout(const Duration(seconds: 2));
 
         bool cacheNeedsUpdate = false;
         for (final doc in snapshot.docs) {

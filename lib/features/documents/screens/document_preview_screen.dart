@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
-import '../../../core/theme/app_theme.dart';
 import '../../../services/pdf_service.dart';
 import '../../ai_assistant/services/ai_service.dart';
 import '../../../services/document_service.dart';
@@ -17,10 +16,12 @@ class DocumentPreviewScreen extends ConsumerStatefulWidget {
   const DocumentPreviewScreen({super.key, required this.data});
 
   @override
-  ConsumerState<DocumentPreviewScreen> createState() => _DocumentPreviewScreenState();
+  ConsumerState<DocumentPreviewScreen> createState() =>
+      _DocumentPreviewScreenState();
 }
 
-class _DocumentPreviewScreenState extends ConsumerState<DocumentPreviewScreen> {
+class _DocumentPreviewScreenState
+    extends ConsumerState<DocumentPreviewScreen> {
   late String _documentText;
   late String _documentTitle;
   bool _isSaving = false;
@@ -45,11 +46,13 @@ class _DocumentPreviewScreenState extends ConsumerState<DocumentPreviewScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Row(children: [
-            Icon(Icons.check_circle, color: Colors.white),
+            Icon(Icons.check_circle, color: Colors.black),
             SizedBox(width: 10),
-            Text('Document saved!'),
+            Text('Document saved to Dashboard!',
+                style: TextStyle(
+                    color: Colors.black, fontWeight: FontWeight.bold)),
           ]),
-          backgroundColor: AppTheme.primaryGreen,
+          backgroundColor: const Color(0xFF00E676),
           behavior: SnackBarBehavior.floating,
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -107,10 +110,10 @@ class _DocumentPreviewScreenState extends ConsumerState<DocumentPreviewScreen> {
       showPremiumUpgradeSheet(
         context,
         title: 'AI Customizer Locked',
-        description: 'You have used all your free AI document edits. Subscribe to Premium for unlimited edits or buy an AI credit pack.',
+        description:
+            'You have used all your free AI document edits. Subscribe to Premium for unlimited edits or buy an AI credit pack.',
         creditType: 'ai',
         onPurchaseSuccess: () {
-          // Re-trigger bottom sheet open
           _showTweakBottomSheet();
         },
       );
@@ -127,12 +130,12 @@ class _DocumentPreviewScreenState extends ConsumerState<DocumentPreviewScreen> {
       builder: (context) => StatefulBuilder(
         builder: (context, setModalState) => Container(
           decoration: const BoxDecoration(
-            color: Colors.white,
+            color: Color(0xFF0F172A),
             borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
           ),
           padding: EdgeInsets.fromLTRB(
             24,
-            12,
+            16,
             24,
             MediaQuery.of(context).viewInsets.bottom + 32,
           ),
@@ -145,40 +148,46 @@ class _DocumentPreviewScreenState extends ConsumerState<DocumentPreviewScreen> {
                   width: 40,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: Colors.grey.shade300,
+                    color: Colors.white24,
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
               ),
               const SizedBox(height: 20),
-              Row(
+              const Row(
                 children: [
-                  const Icon(Icons.auto_awesome, color: AppTheme.primaryGreen),
-                  const SizedBox(width: 10),
-                  const Text(
+                  Icon(Icons.auto_awesome, color: Color(0xFF00E676)),
+                  SizedBox(width: 10),
+                  Text(
                     'Tweak Document with AI',
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: AppTheme.navyBlue,
+                      color: Colors.white,
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: 12),
-              const Text(
-                'Describe the changes you want to make (e.g. "change the lease duration to 2 years" or "add a section about penalties"). The AI will edit this document.',
-                style: TextStyle(fontSize: 13, color: AppTheme.textLight, height: 1.5),
+              Text(
+                'Describe the changes you want to make (e.g. "change lease duration to 2 years" or "add penalty section"). The AI will edit this document.',
+                style: TextStyle(
+                    fontSize: 13,
+                    color: Colors.white.withValues(alpha: 0.7),
+                    height: 1.5),
               ),
               const SizedBox(height: 16),
               TextField(
                 controller: tweakController,
                 maxLines: 4,
+                style: const TextStyle(color: Colors.white),
                 decoration: InputDecoration(
                   hintText: 'Enter your instructions here...',
-                  hintStyle: const TextStyle(fontSize: 13),
+                  hintStyle: TextStyle(
+                      fontSize: 13,
+                      color: Colors.white.withValues(alpha: 0.4)),
                   filled: true,
-                  fillColor: AppTheme.backgroundLight,
+                  fillColor: const Color(0xFF1E293B),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
                     borderSide: BorderSide.none,
@@ -201,7 +210,8 @@ class _DocumentPreviewScreenState extends ConsumerState<DocumentPreviewScreen> {
                           setModalState(() => isTweaking = true);
 
                           try {
-                            final prompt = '''The user wants to make modifications to the following legal document. Modify the document to incorporate their instructions. Return ONLY the modified document text starting directly with its title. Do not include any explanations, greetings, or conversational text.
+                            final prompt =
+                                '''The user wants to make modifications to the following legal document. Modify the document to incorporate their instructions. Return ONLY the modified document text starting directly with its title. Do not include any explanations, greetings, or conversational text.
                             
 Instructions: $instructions
 
@@ -209,15 +219,19 @@ Original Document:
 $_documentText''';
 
                             final aiService = ref.read(aiServiceProvider);
-                            final response = await aiService.sendMessage(prompt);
+                            final response =
+                                await aiService.sendMessage(prompt);
 
                             if (response.startsWith('Both AI providers failed') ||
                                 response.startsWith('An error occurred')) {
                               throw Exception('AI processing failed');
                             }
 
-                            if (response.startsWith('⚠️ **AI Rate Limit Exceeded**')) {
-                              throw Exception(response.replaceAll('⚠️ ', '').replaceAll('**', ''));
+                            if (response
+                                .startsWith('⚠️ **AI Rate Limit Exceeded**')) {
+                              throw Exception(response
+                                  .replaceAll('⚠️ ', '')
+                                  .replaceAll('**', ''));
                             }
 
                             if (!isPremiumUser) {
@@ -237,21 +251,28 @@ $_documentText''';
                                 SnackBar(
                                   content: const Row(
                                     children: [
-                                      Icon(Icons.check_circle, color: Colors.white),
+                                      Icon(Icons.check_circle,
+                                          color: Colors.black),
                                       SizedBox(width: 10),
                                       Text('Document updated successfully!'),
                                     ],
                                   ),
-                                  backgroundColor: AppTheme.primaryGreen,
+                                  backgroundColor: const Color(0xFF00E676),
                                   behavior: SnackBarBehavior.floating,
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12)),
                                 ),
                               );
                             }
                           } catch (e) {
                             setModalState(() => isTweaking = false);
-                            final errorMsg = e.toString().contains('Rate Limit Exceeded')
-                                ? e.toString().replaceAll('Exception:', '').trim()
+                            final errorMsg = e
+                                    .toString()
+                                    .contains('Rate Limit Exceeded')
+                                ? e
+                                    .toString()
+                                    .replaceAll('Exception:', '')
+                                    .trim()
                                 : 'Failed to update document. Please try again.';
                             messenger.showSnackBar(
                               SnackBar(
@@ -262,9 +283,11 @@ $_documentText''';
                           }
                         },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.primaryGreen,
+                    backgroundColor: const Color(0xFF00E676),
+                    foregroundColor: Colors.black,
                     padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16)),
                   ),
                   child: isTweaking
                       ? const Row(
@@ -273,13 +296,20 @@ $_documentText''';
                             SizedBox(
                               width: 20,
                               height: 20,
-                              child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                              child: CircularProgressIndicator(
+                                  color: Colors.black, strokeWidth: 2),
                             ),
                             SizedBox(width: 12),
-                            Text('AI is editing...', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+                            Text('AI is editing...',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black)),
                           ],
                         )
-                      : const Text('Tweak Document', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+                      : const Text('Tweak Document',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black)),
                 ),
               ),
             ],
@@ -292,12 +322,18 @@ $_documentText''';
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.backgroundLight,
+      backgroundColor: const Color(0xFF090D1A),
       appBar: AppBar(
-        title: Text(_documentTitle, overflow: TextOverflow.ellipsis),
+        backgroundColor: const Color(0xFF0D1424),
+        elevation: 0,
+        title: Text(
+          _documentTitle,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.save_outlined),
+            icon: const Icon(Icons.save_outlined, color: Color(0xFF00E676)),
             onPressed: _isSaving ? null : _saveLocally,
             tooltip: 'Save to Dashboard',
           ),
@@ -308,40 +344,48 @@ $_documentText''';
         child: Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: const [
+            color: const Color(0xFF0D1424),
+            borderRadius: BorderRadius.circular(20),
+            border:
+                Border.all(color: Colors.white.withValues(alpha: 0.08)),
+            boxShadow: [
               BoxShadow(
-                  color: Colors.black12, blurRadius: 12, offset: Offset(0, 4)),
+                color: Colors.black.withValues(alpha: 0.2),
+                blurRadius: 16,
+                offset: const Offset(0, 4),
+              ),
             ],
           ),
           child: MarkdownBody(
             data: _documentText,
             styleSheet: MarkdownStyleSheet(
               p: const TextStyle(
-                  fontSize: 15, height: 1.7, color: AppTheme.textDark),
+                  fontSize: 15, height: 1.7, color: Colors.white),
               h1: const TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
-                  color: AppTheme.navyBlue),
+                  color: Color(0xFF00E676)),
               h2: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: AppTheme.navyBlue),
+                  color: Colors.white),
               h3: const TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.bold,
-                  color: AppTheme.navyBlue),
-              strong: const TextStyle(fontWeight: FontWeight.bold),
-              blockquote: const TextStyle(
-                  color: AppTheme.textLight, fontStyle: FontStyle.italic),
+                  color: Colors.white),
+              strong: const TextStyle(
+                  fontWeight: FontWeight.bold, color: Color(0xFF00E676)),
+              blockquote: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.7),
+                  fontStyle: FontStyle.italic),
             ),
           ),
         ),
       ),
 
       persistentFooterButtons: [
-        Padding(
+        Container(
+          color: const Color(0xFF0D1424),
           padding: const EdgeInsets.symmetric(horizontal: 8.0),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -352,16 +396,24 @@ $_documentText''';
                   Row(
                     children: [
                       Icon(
-                        _signatureBytes != null ? Icons.verified : Icons.gesture,
-                        color: _signatureBytes != null ? AppTheme.primaryGreen : AppTheme.textLight,
+                        _signatureBytes != null
+                            ? Icons.verified
+                            : Icons.gesture,
+                        color: _signatureBytes != null
+                            ? const Color(0xFF00E676)
+                            : Colors.white54,
                         size: 20,
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        _signatureBytes != null ? 'Signature Added' : 'No Signature Added',
+                        _signatureBytes != null
+                            ? 'Signature Added'
+                            : 'No Signature Added',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
-                          color: _signatureBytes != null ? AppTheme.primaryGreen : AppTheme.textLight,
+                          color: _signatureBytes != null
+                              ? const Color(0xFF00E676)
+                              : Colors.white54,
                           fontSize: 13,
                         ),
                       ),
@@ -369,27 +421,34 @@ $_documentText''';
                   ),
                   TextButton.icon(
                     onPressed: _drawSignature,
-                    icon: const Icon(Icons.draw, size: 16, color: AppTheme.primaryGreen),
+                    icon: const Icon(Icons.draw,
+                        size: 16, color: Color(0xFF00E676)),
                     label: Text(
-                      _signatureBytes != null ? 'Change Signature' : 'Add E-Signature',
-                      style: const TextStyle(fontWeight: FontWeight.bold, color: AppTheme.primaryGreen, fontSize: 13),
+                      _signatureBytes != null
+                          ? 'Change Signature'
+                          : 'Add E-Signature',
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF00E676),
+                          fontSize: 13),
                     ),
                   ),
                 ],
               ),
-              const Divider(height: 12, thickness: 0.5),
+              const Divider(height: 12, thickness: 0.5, color: Colors.white10),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Row(
                     children: [
-                      Icon(Icons.auto_awesome, color: AppTheme.primaryGreen, size: 20),
+                      Icon(Icons.auto_awesome,
+                          color: Color(0xFF00E676), size: 20),
                       SizedBox(width: 8),
                       Text(
                         'AI Customizer',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
-                          color: AppTheme.navyBlue,
+                          color: Colors.white,
                           fontSize: 13,
                         ),
                       ),
@@ -397,10 +456,14 @@ $_documentText''';
                   ),
                   TextButton.icon(
                     onPressed: _showTweakBottomSheet,
-                    icon: const Icon(Icons.edit_note, size: 18, color: AppTheme.primaryGreen),
+                    icon: const Icon(Icons.edit_note,
+                        size: 18, color: Color(0xFF00E676)),
                     label: const Text(
                       'Tweak with AI',
-                      style: TextStyle(fontWeight: FontWeight.bold, color: AppTheme.primaryGreen, fontSize: 13),
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF00E676),
+                          fontSize: 13),
                     ),
                   ),
                 ],
@@ -410,23 +473,16 @@ $_documentText''';
         ),
       ],
 
-      // Bottom action bar — Save | Export PDF | Export DOCX
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-                color: Colors.black.withOpacity(0.06),
-                blurRadius: 16,
-                offset: const Offset(0, -4)),
-          ],
+          color: const Color(0xFF0D1424),
+          border: Border(top: BorderSide(color: Colors.white.withValues(alpha: 0.08))),
         ),
         child: SafeArea(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
             child: Row(
               children: [
-                // Save button
                 Expanded(
                   child: OutlinedButton.icon(
                     onPressed: _isSaving ? null : _saveLocally,
@@ -434,22 +490,19 @@ $_documentText''';
                         ? const SizedBox(
                             width: 16,
                             height: 16,
-                            child:
-                                CircularProgressIndicator(strokeWidth: 2))
+                            child: CircularProgressIndicator(strokeWidth: 2))
                         : const Icon(Icons.save_outlined),
                     label: const Text('Save'),
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 14),
-                      side: const BorderSide(color: AppTheme.primaryGreen),
-                      foregroundColor: AppTheme.primaryGreen,
+                      side: const BorderSide(color: Color(0xFF00E676)),
+                      foregroundColor: const Color(0xFF00E676),
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12)),
                     ),
                   ),
                 ),
                 const SizedBox(width: 10),
-
-                // Export PDF button
                 Expanded(
                   child: ElevatedButton.icon(
                     onPressed: _isExportingPdf ? null : _exportPdf,
@@ -474,8 +527,6 @@ $_documentText''';
                   ),
                 ),
                 const SizedBox(width: 10),
-
-                // Export DOCX button
                 Expanded(
                   child: ElevatedButton.icon(
                     onPressed: _isExportingDocx ? null : _exportDocx,

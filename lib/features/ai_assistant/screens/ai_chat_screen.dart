@@ -5,7 +5,6 @@ import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/responsive_layout.dart';
 import '../../../core/widgets/web_sidebar.dart';
 import '../services/ai_service.dart';
@@ -21,11 +20,12 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   bool _isTyping = false;
-  
+
   final List<Map<String, String>> _messages = [
     {
       'role': 'ai',
-      'content': 'Hello! I am Kompli, your AI legal assistant. How can I help your business today?'
+      'content':
+          'Hello! I am Kompli, your AI legal assistant. How can I help your business today?'
     }
   ];
 
@@ -83,7 +83,7 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
       _messages.add({'role': 'user', 'content': text});
       _isTyping = true;
     });
-    
+
     _messageController.clear();
     _scrollToBottom();
     _saveHistory();
@@ -123,7 +123,7 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
 
   Widget _buildDesktopScaffold(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.backgroundLight,
+      backgroundColor: const Color(0xFF090D1A),
       body: Row(
         children: [
           const WebSidebar(currentRoute: '/chat'),
@@ -136,14 +136,20 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: Colors.white,
-                        border: Border(bottom: BorderSide(color: Colors.grey.shade200)),
+                        color: const Color(0xFF0D1424),
+                        border: Border(
+                            bottom: BorderSide(
+                                color: Colors.white.withValues(alpha: 0.08))),
                       ),
                       child: const Row(
                         children: [
-                          Icon(Icons.auto_awesome, color: AppTheme.primaryGreen),
+                          Icon(Icons.auto_awesome, color: Color(0xFF00E676)),
                           SizedBox(width: 8),
-                          Text('Kompli AI Assistant', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.navyBlue)),
+                          Text('Kompli AI Assistant',
+                              style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white)),
                         ],
                       ),
                     ),
@@ -161,13 +167,16 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
 
   Widget _buildMobileScaffold(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.backgroundLight,
+      backgroundColor: const Color(0xFF090D1A),
       appBar: AppBar(
+        backgroundColor: const Color(0xFF0D1424),
+        elevation: 0,
         title: const Row(
           children: [
-            Icon(Icons.auto_awesome, color: AppTheme.primaryGreen),
+            Icon(Icons.auto_awesome, color: Color(0xFF00E676)),
             SizedBox(width: 8),
-            Text('Kompli Assistant'),
+            Text('Kompli Assistant',
+                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
           ],
         ),
       ),
@@ -202,13 +211,14 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
       child: Container(
         margin: const EdgeInsets.only(bottom: 16),
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.only(
+        decoration: BoxDecoration(
+          color: const Color(0xFF0D1424),
+          borderRadius: const BorderRadius.only(
             topLeft: Radius.circular(16),
             topRight: Radius.circular(16),
             bottomRight: Radius.circular(16),
           ),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -230,39 +240,41 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
       child: Container(
         margin: const EdgeInsets.only(bottom: 16),
         padding: const EdgeInsets.all(16),
-        constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
+        constraints:
+            BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
         decoration: BoxDecoration(
-          color: isUser ? AppTheme.primaryGreen : Colors.white,
+          color: isUser ? const Color(0xFF00E676) : const Color(0xFF0D1424),
           borderRadius: BorderRadius.only(
             topLeft: const Radius.circular(16),
             topRight: const Radius.circular(16),
             bottomLeft: Radius.circular(isUser ? 16 : 0),
             bottomRight: Radius.circular(isUser ? 0 : 16),
           ),
-          boxShadow: [
-            if (!isUser)
-              BoxShadow(
-                color: Colors.black.withOpacity(0.05),
-                blurRadius: 5,
-                offset: const Offset(0, 2),
-              ),
-          ],
+          border: isUser
+              ? null
+              : Border.all(color: Colors.white.withValues(alpha: 0.08)),
         ),
         child: isUser
             ? Text(
                 text,
                 style: const TextStyle(
-                  color: Colors.white,
+                  color: Colors.black,
+                  fontWeight: FontWeight.w600,
                   height: 1.5,
                 ),
               )
             : MarkdownBody(
                 data: text,
                 styleSheet: MarkdownStyleSheet(
-                  p: const TextStyle(color: AppTheme.textDark, height: 1.5, fontSize: 16),
-                  h1: const TextStyle(color: AppTheme.navyBlue, fontWeight: FontWeight.bold),
-                  h2: const TextStyle(color: AppTheme.navyBlue, fontWeight: FontWeight.bold),
-                  listBullet: const TextStyle(color: AppTheme.primaryGreen),
+                  p: const TextStyle(
+                      color: Colors.white, height: 1.5, fontSize: 15),
+                  h1: const TextStyle(
+                      color: Color(0xFF00E676), fontWeight: FontWeight.bold),
+                  h2: const TextStyle(
+                      color: Color(0xFF00E676), fontWeight: FontWeight.bold),
+                  listBullet: const TextStyle(color: Color(0xFF00E676)),
+                  strong: const TextStyle(
+                      fontWeight: FontWeight.bold, color: Color(0xFF00E676)),
                 ),
               ),
       ),
@@ -272,15 +284,9 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
   Widget _buildInputArea() {
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black12,
-            blurRadius: 10,
-            offset: Offset(0, -2),
-          ),
-        ],
+      decoration: BoxDecoration(
+        color: const Color(0xFF0D1424),
+        border: Border(top: BorderSide(color: Colors.white.withValues(alpha: 0.08))),
       ),
       child: SafeArea(
         child: Row(
@@ -288,11 +294,14 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
             Expanded(
               child: TextField(
                 controller: _messageController,
+                style: const TextStyle(color: Colors.white),
                 decoration: InputDecoration(
                   hintText: 'Ask a legal question...',
+                  hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.4)),
                   filled: true,
-                  fillColor: AppTheme.backgroundLight,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  fillColor: const Color(0xFF1E293B),
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(24),
                     borderSide: BorderSide.none,
@@ -304,11 +313,11 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
             const SizedBox(width: 8),
             Container(
               decoration: const BoxDecoration(
-                color: AppTheme.primaryGreen,
+                color: Color(0xFF00E676),
                 shape: BoxShape.circle,
               ),
               child: IconButton(
-                icon: const Icon(Icons.send, color: Colors.white),
+                icon: const Icon(Icons.send, color: Colors.black),
                 onPressed: _sendMessage,
               ),
             ),
@@ -319,7 +328,6 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
   }
 }
 
-// Animated bouncing dot for the typing indicator
 class _AnimatedDot extends StatefulWidget {
   final int delay;
   const _AnimatedDot({required this.delay});
@@ -328,7 +336,8 @@ class _AnimatedDot extends StatefulWidget {
   State<_AnimatedDot> createState() => _AnimatedDotState();
 }
 
-class _AnimatedDotState extends State<_AnimatedDot> with SingleTickerProviderStateMixin {
+class _AnimatedDotState extends State<_AnimatedDot>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
 
@@ -367,8 +376,8 @@ class _AnimatedDotState extends State<_AnimatedDot> with SingleTickerProviderSta
         child: Container(
           width: 8,
           height: 8,
-          decoration: BoxDecoration(
-            color: AppTheme.primaryGreen,
+          decoration: const BoxDecoration(
+            color: Color(0xFF00E676),
             shape: BoxShape.circle,
           ),
         ),

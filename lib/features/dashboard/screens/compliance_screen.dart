@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:animate_do/animate_do.dart';
-import '../../../core/theme/app_theme.dart';
 import '../../../services/compliance_service.dart';
 
 // Data model for a compliance task
@@ -44,7 +43,8 @@ class _ComplianceScreenState extends State<ComplianceScreen> {
     ComplianceTask(
       id: 'cac_annual',
       title: 'CAC Annual Returns',
-      body: 'Every registered company must file annual returns with the Corporate Affairs Commission (CAC) once a year. This confirms your company is still active and updates your registered details.',
+      body:
+          'Every registered company must file annual returns with the Corporate Affairs Commission (CAC) once a year. This confirms your company is still active and updates your registered details.',
       deadline: 'Due: June 30 every year',
       penalty: 'Penalty: ₦3,000/month late fee + risk of delisting',
       authority: 'Corporate Affairs Commission (CAC)',
@@ -54,7 +54,8 @@ class _ComplianceScreenState extends State<ComplianceScreen> {
     ComplianceTask(
       id: 'firs_cit',
       title: 'FIRS Company Income Tax (CIT)',
-      body: 'Company Income Tax is filed with the Federal Inland Revenue Service (FIRS). It is due 6 months after your financial year-end and requires audited financial statements.',
+      body:
+          'Company Income Tax is filed with the Federal Inland Revenue Service (FIRS). It is due 6 months after your financial year-end and requires audited financial statements.',
       deadline: 'Due: 6 months after financial year-end',
       penalty: 'Penalty: 10% of tax due + 5% per annum interest',
       authority: 'Federal Inland Revenue Service (FIRS)',
@@ -64,7 +65,8 @@ class _ComplianceScreenState extends State<ComplianceScreen> {
     ComplianceTask(
       id: 'firs_vat',
       title: 'FIRS VAT Returns (Monthly)',
-      body: 'If your annual turnover exceeds ₦25 million, you must register for VAT and file monthly returns with FIRS by the 21st of each following month.',
+      body:
+          'If your annual turnover exceeds ₦25 million, you must register for VAT and file monthly returns with FIRS by the 21st of each following month.',
       deadline: 'Due: 21st of every month',
       penalty: 'Penalty: ₦50,000 first month + ₦25,000/month thereafter',
       authority: 'Federal Inland Revenue Service (FIRS)',
@@ -74,17 +76,19 @@ class _ComplianceScreenState extends State<ComplianceScreen> {
     ComplianceTask(
       id: 'pencom',
       title: 'PENCOM Pension Registration',
-      body: 'Companies with 15 or more employees must register with the National Pension Commission (PenCom) and contribute 18% of each employee\'s monthly emolument (10% employer + 8% employee).',
+      body:
+          'Companies with 15 or more employees must register with the National Pension Commission (PenCom) and contribute 18% of each employee\'s monthly emolument (10% employer + 8% employee).',
       deadline: 'One-time registration (monthly contributions)',
       penalty: 'Penalty: 2% of total monthly payroll per month of default',
       authority: 'National Pension Commission (PenCom)',
       icon: Icons.people_outline,
-      color: const Color(0xFF27AE60),
+      color: const Color(0xFF00E676),
     ),
     ComplianceTask(
       id: 'nsitf',
       title: 'NSITF Employee Compensation',
-      body: 'The Nigeria Social Insurance Trust Fund (NSITF) requires employers to pay 1% of total monthly payroll to provide compensation for work-related injuries and diseases.',
+      body:
+          'The Nigeria Social Insurance Trust Fund (NSITF) requires employers to pay 1% of total monthly payroll to provide compensation for work-related injuries and diseases.',
       deadline: 'Due: Monthly (same time as payroll)',
       penalty: 'Penalty: Criminal liability + civil suits from employees',
       authority: 'Nigeria Social Insurance Trust Fund (NSITF)',
@@ -94,7 +98,8 @@ class _ComplianceScreenState extends State<ComplianceScreen> {
     ComplianceTask(
       id: 'itf',
       title: 'ITF Training Contribution',
-      body: 'Companies with 25 or more employees or a turnover above ₦50 million must pay 1% of their annual payroll to the Industrial Training Fund (ITF).',
+      body:
+          'Companies with 25 or more employees or a turnover above ₦50 million must pay 1% of their annual payroll to the Industrial Training Fund (ITF).',
       deadline: 'Due: April 1 every year',
       penalty: 'Penalty: 5% of contribution due + legal action',
       authority: 'Industrial Training Fund (ITF)',
@@ -142,27 +147,29 @@ class _ComplianceScreenState extends State<ComplianceScreen> {
   Widget build(BuildContext context) {
     if (_isLoading) {
       return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
+        backgroundColor: Color(0xFF090D1A),
+        body: Center(
+            child: CircularProgressIndicator(color: Color(0xFF00E676))),
       );
     }
 
     return Scaffold(
-      backgroundColor: AppTheme.backgroundLight,
+      backgroundColor: const Color(0xFF090D1A),
       body: CustomScrollView(
         slivers: [
-          // Gradient Header
+          // Header
           SliverAppBar(
             expandedHeight: 200,
             pinned: true,
-            backgroundColor: AppTheme.navyBlue,
+            backgroundColor: const Color(0xFF0D1424),
             flexibleSpace: FlexibleSpaceBar(
               background: Container(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: _progress == 1.0
-                        ? [const Color(0xFF005C3B), AppTheme.primaryGreen]
+                        ? [const Color(0xFF005C3B), const Color(0xFF00E676)]
                         : _progress >= 0.5
-                            ? [const Color(0xFF7A5C00), AppTheme.accentYellow]
+                            ? [const Color(0xFF7A5C00), const Color(0xFFFFB300)]
                             : [const Color(0xFF7B0000), Colors.redAccent],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
@@ -191,7 +198,7 @@ class _ComplianceScreenState extends State<ComplianceScreen> {
                       Text(
                         '$_completedCount of ${_tasks.length} obligations completed',
                         style: TextStyle(
-                          color: Colors.white.withOpacity(0.85),
+                          color: Colors.white.withValues(alpha: 0.85),
                           fontSize: 14,
                         ),
                       ),
@@ -201,7 +208,8 @@ class _ComplianceScreenState extends State<ComplianceScreen> {
                         child: LinearProgressIndicator(
                           value: _progress,
                           backgroundColor: Colors.white24,
-                          valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                          valueColor:
+                              const AlwaysStoppedAnimation<Color>(Colors.white),
                           minHeight: 10,
                         ),
                       ),
@@ -210,7 +218,8 @@ class _ComplianceScreenState extends State<ComplianceScreen> {
                 ),
               ),
               title: const Text('Compliance Tracker',
-                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                  style: TextStyle(
+                      color: Colors.white, fontWeight: FontWeight.bold)),
               centerTitle: false,
             ),
             actions: [
@@ -232,51 +241,54 @@ class _ComplianceScreenState extends State<ComplianceScreen> {
                 child: Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [AppTheme.navyBlue, Color(0xFF003D7A)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
+                    color: const Color(0xFF0D1424),
                     borderRadius: BorderRadius.circular(18),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppTheme.navyBlue.withOpacity(0.2),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
+                    border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.08)),
                   ),
                   child: Row(
                     children: [
                       Container(
                         padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.15),
+                          color: const Color(0xFF00E676).withValues(alpha: 0.15),
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(Icons.verified_user, color: AppTheme.accentYellow, size: 24),
+                        child: const Icon(Icons.verified_user,
+                            color: Color(0xFF00E676), size: 24),
                       ),
                       const SizedBox(width: 14),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('Live CAC & TIN Lookup', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
+                            const Text('Live CAC & TIN Lookup',
+                                style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14)),
                             const SizedBox(height: 2),
-                            Text('Verify corporate registry records instantly.', style: TextStyle(color: Colors.white.withOpacity(0.85), fontSize: 11)),
+                            Text('Verify corporate registry records instantly.',
+                                style: TextStyle(
+                                    color: Colors.white.withValues(alpha: 0.7),
+                                    fontSize: 11)),
                           ],
                         ),
                       ),
                       ElevatedButton(
                         onPressed: () => context.push('/verify'),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.primaryGreen,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                          backgroundColor: const Color(0xFF00E676),
+                          foregroundColor: Colors.black,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 14, vertical: 8),
                           minimumSize: Size.zero,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10)),
                         ),
-                        child: const Text('Verify', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                        child: const Text('Verify',
+                            style: TextStyle(
+                                fontSize: 12, fontWeight: FontWeight.bold)),
                       ),
                     ],
                   ),
@@ -292,16 +304,19 @@ class _ComplianceScreenState extends State<ComplianceScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  const Icon(Icons.list_alt, color: AppTheme.navyBlue, size: 16),
+                  const Icon(Icons.list_alt, color: Colors.white70, size: 16),
                   const SizedBox(width: 4),
                   const Text(
                     'Checklist',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: AppTheme.navyBlue),
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                        color: Colors.white70),
                   ),
                   const SizedBox(width: 4),
                   Switch.adaptive(
                     value: _isTimelineView,
-                    activeColor: AppTheme.primaryGreen,
+                    activeColor: const Color(0xFF00E676),
                     onChanged: (val) {
                       setState(() {
                         _isTimelineView = val;
@@ -311,10 +326,14 @@ class _ComplianceScreenState extends State<ComplianceScreen> {
                   const SizedBox(width: 4),
                   const Text(
                     'Timeline',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: AppTheme.navyBlue),
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                        color: Colors.white70),
                   ),
                   const SizedBox(width: 4),
-                  const Icon(Icons.timeline, color: AppTheme.primaryGreen, size: 16),
+                  const Icon(Icons.timeline,
+                      color: Color(0xFF00E676), size: 16),
                 ],
               ),
             ),
@@ -344,32 +363,54 @@ class _ComplianceScreenState extends State<ComplianceScreen> {
               sliver: _buildTimelineView(),
             ),
 
-          // Bottom info card
+          // Bottom info card & Attribution
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(20, 0, 20, 40),
             sliver: SliverToBoxAdapter(
-              child: FadeInUp(
-                delay: const Duration(milliseconds: 600),
-                child: Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: AppTheme.navyBlue.withOpacity(0.05),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: AppTheme.navyBlue.withOpacity(0.1)),
-                  ),
-                  child: const Row(
-                    children: [
-                      Icon(Icons.info_outline, color: AppTheme.navyBlue, size: 20),
-                      SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          'Tick each item once completed. Your compliance score on the dashboard updates automatically.',
-                          style: TextStyle(fontSize: 12, color: AppTheme.textLight, height: 1.5),
-                        ),
+              child: Column(
+                children: [
+                  FadeInUp(
+                    delay: const Duration(milliseconds: 600),
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF0D1424),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.08)),
                       ),
-                    ],
+                      child: Row(
+                        children: [
+                          const Icon(Icons.info_outline,
+                              color: Color(0xFF00E676), size: 20),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              'Tick each item once completed. Your compliance score on the dashboard updates automatically.',
+                              style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.white.withValues(alpha: 0.7),
+                                  height: 1.5),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
-                ),
+                  const SizedBox(height: 30),
+                  Center(
+                    child: Text(
+                      'Built by Goanitech LTD',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.white.withValues(alpha: 0.3),
+                        fontWeight: FontWeight.w500,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                ],
               ),
             ),
           ),
@@ -385,17 +426,19 @@ class _ComplianceScreenState extends State<ComplianceScreen> {
         duration: const Duration(milliseconds: 300),
         margin: const EdgeInsets.only(bottom: 14),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: const Color(0xFF0D1424),
           borderRadius: BorderRadius.circular(18),
           border: Border.all(
-            color: task.isDone ? task.color : Colors.grey.shade200,
+            color: task.isDone
+                ? task.color
+                : Colors.white.withValues(alpha: 0.08),
             width: task.isDone ? 2 : 1,
           ),
           boxShadow: [
             BoxShadow(
               color: task.isDone
-                  ? task.color.withOpacity(0.12)
-                  : Colors.black.withOpacity(0.04),
+                  ? task.color.withValues(alpha: 0.12)
+                  : Colors.black.withValues(alpha: 0.1),
               blurRadius: 12,
               offset: const Offset(0, 4),
             ),
@@ -405,7 +448,6 @@ class _ComplianceScreenState extends State<ComplianceScreen> {
           padding: const EdgeInsets.all(16),
           child: Row(
             children: [
-              // Checkbox circle
               GestureDetector(
                 onTap: () => _toggle(task, !task.isDone),
                 child: AnimatedContainer(
@@ -413,18 +455,19 @@ class _ComplianceScreenState extends State<ComplianceScreen> {
                   width: 44,
                   height: 44,
                   decoration: BoxDecoration(
-                    color: task.isDone ? task.color : Colors.grey.shade100,
+                    color: task.isDone
+                        ? task.color
+                        : task.color.withValues(alpha: 0.15),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
                     task.isDone ? Icons.check_rounded : task.icon,
-                    color: task.isDone ? Colors.white : task.color,
+                    color: task.isDone ? Colors.black : task.color,
                     size: 22,
                   ),
                 ),
               ),
               const SizedBox(width: 14),
-              // Content
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -434,8 +477,7 @@ class _ComplianceScreenState extends State<ComplianceScreen> {
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 15,
-                        color: task.isDone ? task.color : AppTheme.navyBlue,
-                        decoration: task.isDone ? TextDecoration.none : null,
+                        color: task.isDone ? task.color : Colors.white,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -443,19 +485,21 @@ class _ComplianceScreenState extends State<ComplianceScreen> {
                       task.deadline,
                       style: TextStyle(
                         fontSize: 12,
-                        color: task.isDone ? task.color.withOpacity(0.7) : AppTheme.textLight,
+                        color: task.isDone
+                            ? task.color.withValues(alpha: 0.7)
+                            : Colors.white.withValues(alpha: 0.6),
                         fontWeight: FontWeight.w500,
                       ),
                     ),
                   ],
                 ),
               ),
-              // Arrow / Done badge
               if (task.isDone)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: task.color.withOpacity(0.1),
+                    color: task.color.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text('Done',
@@ -465,7 +509,7 @@ class _ComplianceScreenState extends State<ComplianceScreen> {
                           color: task.color)),
                 )
               else
-                const Icon(Icons.chevron_right, color: Colors.grey),
+                const Icon(Icons.chevron_right, color: Colors.white38),
             ],
           ),
         ),
@@ -480,34 +524,32 @@ class _ComplianceScreenState extends State<ComplianceScreen> {
       backgroundColor: Colors.transparent,
       builder: (_) => Container(
         decoration: const BoxDecoration(
-          color: Colors.white,
+          color: Color(0xFF0F172A),
           borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
         ),
-        padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
+        padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Drag handle
             Center(
               child: Container(
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade300,
+                  color: Colors.white24,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
             ),
             const SizedBox(height: 20),
 
-            // Icon + Title
             Row(
               children: [
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: task.color.withOpacity(0.1),
+                    color: task.color.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(14),
                   ),
                   child: Icon(task.icon, color: task.color, size: 26),
@@ -519,7 +561,7 @@ class _ComplianceScreenState extends State<ComplianceScreen> {
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: AppTheme.navyBlue,
+                      color: Colors.white,
                     ),
                   ),
                 ),
@@ -527,19 +569,21 @@ class _ComplianceScreenState extends State<ComplianceScreen> {
             ),
             const SizedBox(height: 20),
 
-            // Body text
             Text(task.body,
-                style: const TextStyle(
-                    fontSize: 14, color: AppTheme.textDark, height: 1.7)),
+                style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.white.withValues(alpha: 0.85),
+                    height: 1.7)),
             const SizedBox(height: 20),
 
-            // Info chips
             _infoRow(Icons.calendar_today_outlined, task.deadline, task.color),
             const SizedBox(height: 10),
             _infoRow(Icons.warning_amber_rounded, task.penalty, Colors.redAccent),
             const SizedBox(height: 10),
-            _infoRow(Icons.account_balance_outlined, task.authority, AppTheme.navyBlue),
-            // Schedule Compliance Alert button
+            _infoRow(
+                Icons.account_balance_outlined, task.authority, Colors.white),
+            const SizedBox(height: 20),
+
             SizedBox(
               width: double.infinity,
               child: OutlinedButton.icon(
@@ -547,19 +591,21 @@ class _ComplianceScreenState extends State<ComplianceScreen> {
                   Navigator.pop(context);
                   _showSuccessDialog(task);
                 },
-                icon: const Icon(Icons.alarm, size: 20),
-                label: const Text('Schedule Compliance Alert'),
+                icon: Icon(Icons.alarm, size: 20, color: task.color),
+                label: Text('Schedule Compliance Alert',
+                    style: TextStyle(
+                        color: task.color, fontWeight: FontWeight.bold)),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: task.color,
                   side: BorderSide(color: task.color, width: 1.5),
                   padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16)),
                 ),
               ),
             ),
             const SizedBox(height: 12),
 
-            // Toggle button
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -568,8 +614,10 @@ class _ComplianceScreenState extends State<ComplianceScreen> {
                   Navigator.pop(context);
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: task.isDone ? Colors.grey.shade200 : task.color,
-                  foregroundColor: task.isDone ? AppTheme.textDark : Colors.white,
+                  backgroundColor: task.isDone
+                      ? Colors.white.withValues(alpha: 0.1)
+                      : task.color,
+                  foregroundColor: task.isDone ? Colors.white : Colors.black,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16)),
@@ -577,7 +625,8 @@ class _ComplianceScreenState extends State<ComplianceScreen> {
                 ),
                 child: Text(
                   task.isDone ? 'Mark as Pending' : 'Mark as Done ✓',
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                      fontSize: 16, fontWeight: FontWeight.bold),
                 ),
               ),
             ),
@@ -587,19 +636,42 @@ class _ComplianceScreenState extends State<ComplianceScreen> {
     );
   }
 
+  Widget _infoRow(IconData icon, String text, Color color) {
+    return Row(
+      children: [
+        Icon(icon, size: 16, color: color),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            text,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   void _showSuccessDialog(ComplianceTask task) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: Colors.white,
+        backgroundColor: const Color(0xFF0D1424),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        title: Row(
+        title: const Row(
           children: [
-            const Icon(Icons.check_circle_outline, color: AppTheme.primaryGreen, size: 28),
-            const SizedBox(width: 12),
-            const Text(
+            Icon(Icons.check_circle_outline,
+                color: Color(0xFF00E676), size: 28),
+            SizedBox(width: 12),
+            Text(
               'Alert Scheduled',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: AppTheme.navyBlue),
+              style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 20,
+                  color: Colors.white),
             ),
           ],
         ),
@@ -609,36 +681,39 @@ class _ComplianceScreenState extends State<ComplianceScreen> {
           children: [
             Text(
               'A compliance reminder has been scheduled for:',
-              style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
+              style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 14),
             ),
             const SizedBox(height: 12),
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: task.color.withOpacity(0.08),
+                color: task.color.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: task.color.withOpacity(0.2)),
+                border: Border.all(color: task.color.withValues(alpha: 0.3)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     task.title,
-                    style: TextStyle(fontWeight: FontWeight.bold, color: task.color, fontSize: 15),
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: task.color,
+                        fontSize: 15),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     task.deadline,
-                    style: const TextStyle(fontSize: 13, color: AppTheme.textDark),
+                    style: const TextStyle(fontSize: 13, color: Colors.white),
                   ),
                 ],
               ),
             ),
             const SizedBox(height: 16),
-            const Text(
+            Text(
               'You will receive push notifications and alerts as the deadline approaches.',
-              style: TextStyle(fontSize: 13, color: AppTheme.textLight),
+              style: TextStyle(fontSize: 13, color: Colors.white.withValues(alpha: 0.6)),
             ),
           ],
         ),
@@ -647,7 +722,8 @@ class _ComplianceScreenState extends State<ComplianceScreen> {
             onPressed: () => Navigator.pop(context),
             child: const Text(
               'Great, thanks!',
-              style: TextStyle(fontWeight: FontWeight.bold, color: AppTheme.primaryGreen),
+              style: TextStyle(
+                  fontWeight: FontWeight.bold, color: Color(0xFF00E676)),
             ),
           ),
         ],
@@ -671,7 +747,8 @@ class _ComplianceScreenState extends State<ComplianceScreen> {
         'countdown': 'In 19 days',
         'color': const Color(0xFF6C63FF),
         'icon': Icons.account_balance_outlined,
-        'description': 'Mandatory annual returns filing for all registered companies.',
+        'description':
+            'Mandatory annual returns filing for all registered companies.',
       },
       {
         'title': 'FIRS Company Income Tax (CIT)',
@@ -679,7 +756,8 @@ class _ComplianceScreenState extends State<ComplianceScreen> {
         'countdown': 'In 19 days (6 months post-FY)',
         'color': const Color(0xFFE67E22),
         'icon': Icons.receipt_long_outlined,
-        'description': 'Submit CIT audits and declarations to avoid 10% interest penalty.',
+        'description':
+            'Submit CIT audits and declarations to avoid 10% interest penalty.',
       },
       {
         'title': 'NSITF Contribution (Monthly)',
@@ -693,9 +771,10 @@ class _ComplianceScreenState extends State<ComplianceScreen> {
         'title': 'PENCOM Pension Remittance',
         'date': 'July 14, 2026',
         'countdown': 'In 33 days (7 days post-month)',
-        'color': const Color(0xFF27AE60),
+        'color': const Color(0xFF00E676),
         'icon': Icons.people_outline,
-        'description': 'Monthly 18% total payroll pension contributions transfer.',
+        'description':
+            'Monthly 18% total payroll pension contributions transfer.',
       },
       {
         'title': 'ITF Training Contribution',
@@ -717,7 +796,6 @@ class _ComplianceScreenState extends State<ComplianceScreen> {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Timeline spine
                 Column(
                   children: [
                     Container(
@@ -729,39 +807,34 @@ class _ComplianceScreenState extends State<ComplianceScreen> {
                         border: Border.all(color: Colors.white, width: 4),
                         boxShadow: [
                           BoxShadow(
-                            color: (milestone['color'] as Color).withOpacity(0.3),
+                            color:
+                                (milestone['color'] as Color).withValues(alpha: 0.3),
                             blurRadius: 6,
                             offset: const Offset(0, 2),
                           ),
                         ],
                       ),
-                      child: Icon(milestone['icon'] as IconData, color: Colors.white, size: 10),
+                      child: Icon(milestone['icon'] as IconData,
+                          color: Colors.black, size: 10),
                     ),
                     if (!isLast)
                       Container(
                         width: 2,
                         height: 90,
-                        color: Colors.grey.shade300,
+                        color: Colors.white24,
                       ),
                   ],
                 ),
                 const SizedBox(width: 16),
-                // Card details
                 Expanded(
                   child: Container(
                     margin: const EdgeInsets.only(bottom: 20),
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: const Color(0xFF0D1424),
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: Colors.grey.shade100),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.02),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
+                      border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.08)),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -772,13 +845,18 @@ class _ComplianceScreenState extends State<ComplianceScreen> {
                             Expanded(
                               child: Text(
                                 milestone['title'] as String,
-                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppTheme.navyBlue),
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14,
+                                    color: Colors.white),
                               ),
                             ),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 4),
                               decoration: BoxDecoration(
-                                color: (milestone['color'] as Color).withOpacity(0.1),
+                                color: (milestone['color'] as Color)
+                                    .withValues(alpha: 0.15),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Text(
@@ -795,12 +873,18 @@ class _ComplianceScreenState extends State<ComplianceScreen> {
                         const SizedBox(height: 6),
                         Text(
                           'Deadline: ${milestone['date']}',
-                          style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.grey.shade500),
+                          style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white.withValues(alpha: 0.5)),
                         ),
                         const SizedBox(height: 8),
                         Text(
                           milestone['description'] as String,
-                          style: const TextStyle(fontSize: 12, color: AppTheme.textLight, height: 1.4),
+                          style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.white.withValues(alpha: 0.7),
+                              height: 1.4),
                         ),
                       ],
                     ),
@@ -812,21 +896,6 @@ class _ComplianceScreenState extends State<ComplianceScreen> {
         },
         childCount: milestones.length,
       ),
-    );
-  }
-
-  Widget _infoRow(IconData icon, String text, Color color) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Icon(icon, size: 16, color: color),
-        const SizedBox(width: 10),
-        Expanded(
-          child: Text(text,
-              style: TextStyle(
-                  fontSize: 13, color: color, fontWeight: FontWeight.w500)),
-        ),
-      ],
     );
   }
 }

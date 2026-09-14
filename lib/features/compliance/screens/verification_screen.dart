@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:animate_do/animate_do.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/theme/app_theme.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../services/verification_service.dart';
 import '../../../services/billing_service.dart';
 import '../../../services/aml_service.dart';
@@ -15,7 +15,8 @@ class VerificationScreen extends StatefulWidget {
   State<VerificationScreen> createState() => _VerificationScreenState();
 }
 
-class _VerificationScreenState extends State<VerificationScreen> with SingleTickerProviderStateMixin {
+class _VerificationScreenState extends State<VerificationScreen>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final _cacController = TextEditingController();
   final _tinController = TextEditingController();
@@ -24,7 +25,7 @@ class _VerificationScreenState extends State<VerificationScreen> with SingleTick
   bool _isCacLoading = false;
   bool _isTinLoading = false;
   bool _isAmlLoading = false;
-  
+
   Map<String, dynamic>? _cacResult;
   Map<String, dynamic>? _tinResult;
   AmlScreeningResult? _amlResult;
@@ -59,10 +60,10 @@ class _VerificationScreenState extends State<VerificationScreen> with SingleTick
       showPremiumUpgradeSheet(
         context,
         title: 'CAC Public Registry Search Locked',
-        description: 'You have used all your free business lookups. Subscribe to Premium for unlimited checks or buy a CAC lookup credit pack.',
+        description:
+            'You have used all your free business lookups. Subscribe to Premium for unlimited checks or buy a CAC lookup credit pack.',
         creditType: 'cac',
         onPurchaseSuccess: () {
-          // Re-trigger verification
           _verifyCAC();
         },
       );
@@ -117,10 +118,10 @@ class _VerificationScreenState extends State<VerificationScreen> with SingleTick
       showPremiumUpgradeSheet(
         context,
         title: 'Taxpayer Lookup Locked',
-        description: 'You have used all your free taxpayer lookups. Subscribe to Premium for unlimited checks or buy a lookup credit pack.',
+        description:
+            'You have used all your free taxpayer lookups. Subscribe to Premium for unlimited checks or buy a lookup credit pack.',
         creditType: 'cac',
         onPurchaseSuccess: () {
-          // Re-trigger verification
           _verifyTIN();
         },
       );
@@ -129,7 +130,8 @@ class _VerificationScreenState extends State<VerificationScreen> with SingleTick
 
     final query = _tinController.text.trim();
     if (query.isEmpty) {
-      setState(() => _tinError = 'Please enter a Tax Identification Number (TIN)');
+      setState(
+          () => _tinError = 'Please enter a Tax Identification Number (TIN)');
       return;
     }
 
@@ -167,7 +169,8 @@ class _VerificationScreenState extends State<VerificationScreen> with SingleTick
   Future<void> _verifyAML() async {
     final query = _amlController.text.trim();
     if (query.isEmpty) {
-      setState(() => _amlError = 'Please enter a person or director name to screen');
+      setState(
+          () => _amlError = 'Please enter a person or director name to screen');
       return;
     }
 
@@ -195,17 +198,105 @@ class _VerificationScreenState extends State<VerificationScreen> with SingleTick
     }
   }
 
+  Future<void> _importCacToProfile(Map<String, dynamic> data) async {
+    final prefs = await SharedPreferences.getInstance();
+    final companyName = data['companyName'] as String? ?? '';
+    final rcNumber = data['rcNumber'] as String? ?? '';
+    final address = data['address'] as String? ?? '';
+    final type = data['type'] as String? ?? '';
+
+    if (companyName.isNotEmpty) {
+      await prefs.setString('companyName', companyName);
+    }
+    if (rcNumber.isNotEmpty) {
+      await prefs.setString('rcNumber', rcNumber);
+    }
+    if (address.isNotEmpty) {
+      await prefs.setString('address', address);
+    }
+    if (type.isNotEmpty) {
+      await prefs.setString('businessType', type);
+    }
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.check_circle, color: Colors.black),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  'Imported "$companyName" into Business Profile! Legal docs will auto-fill.',
+                  style: const TextStyle(
+                      color: Colors.black, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: const Color(0xFF00E676),
+          behavior: SnackBarBehavior.floating,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+      );
+    }
+  }
+
+  Future<void> _importTinToProfile(Map<String, dynamic> data) async {
+    final prefs = await SharedPreferences.getInstance();
+    final tin = data['tin'] as String? ?? '';
+    final name = data['taxpayerName'] as String? ?? '';
+
+    if (tin.isNotEmpty) {
+      await prefs.setString('tin', tin);
+    }
+    if (name.isNotEmpty && (prefs.getString('companyName') ?? '').isEmpty) {
+      await prefs.setString('companyName', name);
+    }
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.check_circle, color: Colors.black),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  'Imported TIN ($tin) into Business Profile!',
+                  style: const TextStyle(
+                      color: Colors.black, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: const Color(0xFF00E676),
+          behavior: SnackBarBehavior.floating,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.backgroundLight,
+      backgroundColor: const Color(0xFF090D1A),
       appBar: AppBar(
-        title: const Text('Verify Business & AML Info'),
+        backgroundColor: const Color(0xFF0D1424),
+        elevation: 0,
+        title: const Text(
+          'Verify Business & AML Info',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
         bottom: TabBar(
           controller: _tabController,
-          labelColor: AppTheme.primaryGreen,
-          unselectedLabelColor: AppTheme.textLight,
-          indicatorColor: AppTheme.primaryGreen,
+          labelColor: const Color(0xFF00E676),
+          unselectedLabelColor: Colors.white60,
+          indicatorColor: const Color(0xFF00E676),
+          indicatorWeight: 3,
           tabs: const [
             Tab(icon: Icon(Icons.business), text: 'CAC Search'),
             Tab(icon: Icon(Icons.receipt_long), text: 'FIRS TIN'),
@@ -232,12 +323,16 @@ class _VerificationScreenState extends State<VerificationScreen> with SingleTick
         children: [
           const Text(
             'CAC Public Registry Search',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppTheme.navyBlue),
+            style: TextStyle(
+                fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
           ),
           const SizedBox(height: 8),
-          const Text(
+          Text(
             'Verify registration status, RC number, incorporation date, and directors listed with the Corporate Affairs Commission.',
-            style: TextStyle(fontSize: 13, color: AppTheme.textLight, height: 1.5),
+            style: TextStyle(
+                fontSize: 13,
+                color: Colors.white.withValues(alpha: 0.7),
+                height: 1.5),
           ),
           const SizedBox(height: 24),
           Row(
@@ -245,10 +340,26 @@ class _VerificationScreenState extends State<VerificationScreen> with SingleTick
               Expanded(
                 child: TextField(
                   controller: _cacController,
+                  style: const TextStyle(color: Colors.white),
                   decoration: InputDecoration(
                     hintText: 'e.g. Flutterwave or RC1324832',
+                    hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.4)),
                     errorText: _cacError,
-                    prefixIcon: const Icon(Icons.search, color: AppTheme.primaryGreen),
+                    fillColor: const Color(0xFF0D1424),
+                    filled: true,
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14)),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide(
+                          color: Colors.white.withValues(alpha: 0.1)),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: const BorderSide(color: Color(0xFF00E676)),
+                    ),
+                    prefixIcon:
+                        const Icon(Icons.search, color: Color(0xFF00E676)),
                   ),
                   onSubmitted: (_) => _verifyCAC(),
                 ),
@@ -259,17 +370,40 @@ class _VerificationScreenState extends State<VerificationScreen> with SingleTick
                 child: ElevatedButton(
                   onPressed: _isCacLoading ? null : _verifyCAC,
                   style: ElevatedButton.styleFrom(
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    backgroundColor: const Color(0xFF00E676),
+                    foregroundColor: Colors.black,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
                   ),
                   child: _isCacLoading
-                      ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                      : const Text('Search'),
+                      ? const SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(
+                              color: Colors.black, strokeWidth: 2))
+                      : const Text('Search',
+                          style: TextStyle(fontWeight: FontWeight.bold)),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 28),
-          if (_cacResult != null) FadeInUp(duration: const Duration(milliseconds: 400), child: _buildCacCertificate(_cacResult!)),
+          if (_cacResult != null)
+            FadeInUp(
+                duration: const Duration(milliseconds: 400),
+                child: _buildCacCertificate(_cacResult!)),
+          const SizedBox(height: 30),
+          Center(
+            child: Text(
+              'Built by Goanitech LTD',
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.white.withValues(alpha: 0.3),
+                fontWeight: FontWeight.w500,
+                letterSpacing: 0.5,
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -283,12 +417,16 @@ class _VerificationScreenState extends State<VerificationScreen> with SingleTick
         children: [
           const Text(
             'FIRS/JTB Taxpayer Lookup',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppTheme.navyBlue),
+            style: TextStyle(
+                fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
           ),
           const SizedBox(height: 8),
-          const Text(
+          Text(
             'Check the status of a Tax Identification Number (TIN) and review current FIRS office registration details.',
-            style: TextStyle(fontSize: 13, color: AppTheme.textLight, height: 1.5),
+            style: TextStyle(
+                fontSize: 13,
+                color: Colors.white.withValues(alpha: 0.7),
+                height: 1.5),
           ),
           const SizedBox(height: 24),
           Row(
@@ -296,10 +434,26 @@ class _VerificationScreenState extends State<VerificationScreen> with SingleTick
               Expanded(
                 child: TextField(
                   controller: _tinController,
+                  style: const TextStyle(color: Colors.white),
                   decoration: InputDecoration(
                     hintText: 'Enter 10-digit TIN (e.g. 19384029)',
+                    hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.4)),
                     errorText: _tinError,
-                    prefixIcon: const Icon(Icons.search, color: AppTheme.primaryGreen),
+                    fillColor: const Color(0xFF0D1424),
+                    filled: true,
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14)),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide(
+                          color: Colors.white.withValues(alpha: 0.1)),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: const BorderSide(color: Color(0xFF00E676)),
+                    ),
+                    prefixIcon:
+                        const Icon(Icons.search, color: Color(0xFF00E676)),
                   ),
                   onSubmitted: (_) => _verifyTIN(),
                 ),
@@ -310,17 +464,40 @@ class _VerificationScreenState extends State<VerificationScreen> with SingleTick
                 child: ElevatedButton(
                   onPressed: _isTinLoading ? null : _verifyTIN,
                   style: ElevatedButton.styleFrom(
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    backgroundColor: const Color(0xFF00E676),
+                    foregroundColor: Colors.black,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
                   ),
                   child: _isTinLoading
-                      ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                      : const Text('Search'),
+                      ? const SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(
+                              color: Colors.black, strokeWidth: 2))
+                      : const Text('Search',
+                          style: TextStyle(fontWeight: FontWeight.bold)),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 28),
-          if (_tinResult != null) FadeInUp(duration: const Duration(milliseconds: 400), child: _buildTinCertificate(_tinResult!)),
+          if (_tinResult != null)
+            FadeInUp(
+                duration: const Duration(milliseconds: 400),
+                child: _buildTinCertificate(_tinResult!)),
+          const SizedBox(height: 30),
+          Center(
+            child: Text(
+              'Built by Goanitech LTD',
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.white.withValues(alpha: 0.3),
+                fontWeight: FontWeight.w500,
+                letterSpacing: 0.5,
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -333,16 +510,13 @@ class _VerificationScreenState extends State<VerificationScreen> with SingleTick
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Colors.white, Color(0xFFF9FFF9)],
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-        ),
+        color: const Color(0xFF0D1424),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppTheme.primaryGreen.withOpacity(0.3), width: 1.5),
+        border: Border.all(
+            color: const Color(0xFF00E676).withValues(alpha: 0.3), width: 1.5),
         boxShadow: [
           BoxShadow(
-            color: AppTheme.primaryGreen.withOpacity(0.06),
+            color: const Color(0xFF00E676).withValues(alpha: 0.06),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -352,7 +526,6 @@ class _VerificationScreenState extends State<VerificationScreen> with SingleTick
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Stamp / Header
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -360,47 +533,65 @@ class _VerificationScreenState extends State<VerificationScreen> with SingleTick
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
-                      color: AppTheme.primaryGreen.withOpacity(0.12),
+                      color: const Color(0xFF00E676).withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
                       result['source'] ?? 'Verified Record',
-                      style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppTheme.primaryGreen, letterSpacing: 0.5),
+                      style: const TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF00E676),
+                          letterSpacing: 0.5),
                     ),
                   ),
                   const SizedBox(height: 8),
-                  const Text(
+                  Text(
                     'FEDERAL REPUBLIC OF NIGERIA',
-                    style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: AppTheme.textLight, letterSpacing: 1),
+                    style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white.withValues(alpha: 0.5),
+                        letterSpacing: 1),
                   ),
                 ],
               ),
-              const Icon(Icons.verified_user, color: AppTheme.primaryGreen, size: 44),
+              const Icon(Icons.verified_user,
+                  color: Color(0xFF00E676), size: 44),
             ],
           ),
-          const Divider(height: 32, thickness: 1),
-          
-          // Company Name
+          const Divider(height: 32, thickness: 1, color: Colors.white10),
           Text(
             data['companyName'] ?? 'UNKNOWN COMPANY',
-            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppTheme.navyBlue, height: 1.3),
+            style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+                height: 1.3),
           ),
           const SizedBox(height: 16),
-
-          // Detail rows
-          _certificateRow('Registration Number', data['rcNumber'] ?? 'N/A', Icons.tag),
-          _certificateRow('Company Type', data['type'] ?? 'N/A', Icons.class_outlined),
-          _certificateRow('Status', data['status'] ?? 'N/A', Icons.check_circle_outline, color: AppTheme.primaryGreen),
-          _certificateRow('Incorporation Date', data['incorporationDate'] ?? 'N/A', Icons.calendar_today_outlined),
-          _certificateRow('Registered Address', data['address'] ?? 'N/A', Icons.location_on_outlined),
-          
+          _certificateRow(
+              'Registration Number', data['rcNumber'] ?? 'N/A', Icons.tag),
+          _certificateRow(
+              'Company Type', data['type'] ?? 'N/A', Icons.class_outlined),
+          _certificateRow('Status', data['status'] ?? 'N/A',
+              Icons.check_circle_outline,
+              color: const Color(0xFF00E676)),
+          _certificateRow('Incorporation Date',
+              data['incorporationDate'] ?? 'N/A', Icons.calendar_today_outlined),
+          _certificateRow('Registered Address', data['address'] ?? 'N/A',
+              Icons.location_on_outlined),
           if (directors.isNotEmpty) ...[
             const SizedBox(height: 16),
             const Text(
               'Listed Directors',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppTheme.navyBlue),
+              style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                  color: Colors.white),
             ),
             const SizedBox(height: 8),
             Wrap(
@@ -408,15 +599,42 @@ class _VerificationScreenState extends State<VerificationScreen> with SingleTick
               runSpacing: 8,
               children: directors.map((director) {
                 return Chip(
-                  avatar: const CircleAvatar(backgroundColor: AppTheme.primaryGreen, child: Icon(Icons.person, size: 12, color: Colors.white)),
-                  label: Text(director, style: const TextStyle(fontSize: 12, color: AppTheme.navyBlue)),
-                  backgroundColor: Colors.white,
-                  side: BorderSide(color: Colors.grey.shade200),
+                  avatar: const CircleAvatar(
+                      backgroundColor: Color(0xFF00E676),
+                      child: Icon(Icons.person, size: 12, color: Colors.black)),
+                  label: Text(director,
+                      style: const TextStyle(
+                          fontSize: 12, color: Colors.white)),
+                  backgroundColor: const Color(0xFF1E293B),
+                  side: BorderSide(
+                      color: Colors.white.withValues(alpha: 0.1)),
                   padding: const EdgeInsets.symmetric(horizontal: 4),
                 );
               }).toList(),
             ),
           ],
+          const SizedBox(height: 24),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () => _importCacToProfile(data),
+              icon: const Icon(Icons.download_done_rounded,
+                  color: Colors.black, size: 20),
+              label: const Text(
+                'Import into Business Profile →',
+                style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF00E676),
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -429,16 +647,13 @@ class _VerificationScreenState extends State<VerificationScreen> with SingleTick
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Colors.white, Color(0xFFFAF9FF)],
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-        ),
+        color: const Color(0xFF0D1424),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFF6C63FF).withOpacity(0.3), width: 1.5),
+        border: Border.all(
+            color: const Color(0xFF6C63FF).withValues(alpha: 0.3), width: 1.5),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF6C63FF).withOpacity(0.06),
+            color: const Color(0xFF6C63FF).withValues(alpha: 0.06),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -448,7 +663,6 @@ class _VerificationScreenState extends State<VerificationScreen> with SingleTick
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -456,56 +670,95 @@ class _VerificationScreenState extends State<VerificationScreen> with SingleTick
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF6C63FF).withOpacity(0.12),
+                      color: const Color(0xFF6C63FF).withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
                       result['source'] ?? 'Verified Tax Record',
-                      style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF6C63FF), letterSpacing: 0.5),
+                      style: const TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF6C63FF),
+                          letterSpacing: 0.5),
                     ),
                   ),
                   const SizedBox(height: 8),
-                  const Text(
+                  Text(
                     'FEDERAL INLAND REVENUE SERVICE',
-                    style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: AppTheme.textLight, letterSpacing: 1),
+                    style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white.withValues(alpha: 0.5),
+                        letterSpacing: 1),
                   ),
                 ],
               ),
-              const Icon(Icons.assignment_turned_in, color: Color(0xFF6C63FF), size: 44),
+              const Icon(Icons.assignment_turned_in,
+                  color: Color(0xFF6C63FF), size: 44),
             ],
           ),
-          const Divider(height: 32, thickness: 1),
-
-          // Taxpayer Name
+          const Divider(height: 32, thickness: 1, color: Colors.white10),
           Text(
             data['taxpayerName'] ?? 'UNKNOWN TAXPAYER',
-            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppTheme.navyBlue, height: 1.3),
+            style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+                height: 1.3),
           ),
           const SizedBox(height: 16),
-
-          _certificateRow('TIN Number', data['tin'] ?? 'N/A', Icons.vpn_key_outlined),
-          _certificateRow('Tax Office', data['firsOffice'] ?? 'N/A', Icons.account_balance_outlined),
-          _certificateRow('Registration Email', data['email'] ?? 'N/A', Icons.mail_outline),
           _certificateRow(
-            'Tax Compliance Status', 
-            isCompliant ? 'COMPLIANT & ACTIVE' : 'OUTSTANDING RETURNS', 
-            Icons.verified_user_outlined, 
-            color: isCompliant ? AppTheme.primaryGreen : Colors.redAccent
+              'TIN Number', data['tin'] ?? 'N/A', Icons.vpn_key_outlined),
+          _certificateRow('Tax Office', data['firsOffice'] ?? 'N/A',
+              Icons.account_balance_outlined),
+          _certificateRow(
+              'Registration Email', data['email'] ?? 'N/A', Icons.mail_outline),
+          _certificateRow(
+            'Tax Compliance Status',
+            isCompliant ? 'COMPLIANT & ACTIVE' : 'OUTSTANDING RETURNS',
+            Icons.verified_user_outlined,
+            color: isCompliant
+                ? const Color(0xFF00E676)
+                : Colors.redAccent,
+          ),
+          const SizedBox(height: 24),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () => _importTinToProfile(data),
+              icon: const Icon(Icons.download_done_rounded,
+                  color: Colors.white, size: 20),
+              label: const Text(
+                'Import TIN into Business Profile →',
+                style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF6C63FF),
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
+              ),
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _certificateRow(String label, String value, IconData icon, {Color? color}) {
+  Widget _certificateRow(String label, String value, IconData icon,
+      {Color? color}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 16, color: color ?? AppTheme.textLight),
+          Icon(icon, size: 16, color: color ?? Colors.white54),
           const SizedBox(width: 10),
           Expanded(
             child: Column(
@@ -513,17 +766,19 @@ class _VerificationScreenState extends State<VerificationScreen> with SingleTick
               children: [
                 Text(
                   label,
-                  style: const TextStyle(fontSize: 10, color: AppTheme.textLight, fontWeight: FontWeight.w500),
+                  style: TextStyle(
+                      fontSize: 10,
+                      color: Colors.white.withValues(alpha: 0.5),
+                      fontWeight: FontWeight.w500),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   value,
                   style: TextStyle(
-                    fontSize: 13, 
-                    fontWeight: FontWeight.bold, 
-                    color: color ?? AppTheme.navyBlue,
-                    height: 1.4
-                  ),
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                      color: color ?? Colors.white,
+                      height: 1.4),
                 ),
               ],
             ),
@@ -541,12 +796,16 @@ class _VerificationScreenState extends State<VerificationScreen> with SingleTick
         children: [
           const Text(
             'AML & Sanctions Screening (NIGSAC + UN)',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppTheme.navyBlue),
+            style: TextStyle(
+                fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
           ),
           const SizedBox(height: 8),
-          const Text(
+          Text(
             'Screen directors, beneficial owners, or entities against the Nigeria Sanctions List (NIGSAC under TPPA 2022) & UN Consolidated List.',
-            style: TextStyle(fontSize: 13, color: AppTheme.textLight, height: 1.5),
+            style: TextStyle(
+                fontSize: 13,
+                color: Colors.white.withValues(alpha: 0.7),
+                height: 1.5),
           ),
           const SizedBox(height: 24),
           Row(
@@ -554,10 +813,26 @@ class _VerificationScreenState extends State<VerificationScreen> with SingleTick
               Expanded(
                 child: TextField(
                   controller: _amlController,
+                  style: const TextStyle(color: Colors.white),
                   decoration: InputDecoration(
                     hintText: 'e.g. Director or Entity Name',
+                    hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.4)),
                     errorText: _amlError,
-                    prefixIcon: const Icon(Icons.security, color: Color(0xFFFFB300)),
+                    fillColor: const Color(0xFF0D1424),
+                    filled: true,
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14)),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide(
+                          color: Colors.white.withValues(alpha: 0.1)),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: const BorderSide(color: Color(0xFF00E676)),
+                    ),
+                    prefixIcon: const Icon(Icons.security,
+                        color: Color(0xFFFFB300)),
                   ),
                   onSubmitted: (_) => _verifyAML(),
                 ),
@@ -567,16 +842,21 @@ class _VerificationScreenState extends State<VerificationScreen> with SingleTick
                 height: 56,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF0F172A),
+                    backgroundColor: const Color(0xFF00E676),
+                    foregroundColor: Colors.black,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
                   ),
                   onPressed: _isAmlLoading ? null : _verifyAML,
                   child: _isAmlLoading
                       ? const SizedBox(
                           width: 20,
                           height: 20,
-                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                          child: CircularProgressIndicator(
+                              color: Colors.black, strokeWidth: 2),
                         )
-                      : const Text('Screen AML'),
+                      : const Text('Screen AML',
+                          style: TextStyle(fontWeight: FontWeight.bold)),
                 ),
               ),
             ],
@@ -588,6 +868,18 @@ class _VerificationScreenState extends State<VerificationScreen> with SingleTick
               child: _buildAmlResultCard(_amlResult!),
             ),
           ],
+          const SizedBox(height: 30),
+          Center(
+            child: Text(
+              'Built by Goanitech LTD',
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.white.withValues(alpha: 0.3),
+                fontWeight: FontWeight.w500,
+                letterSpacing: 0.5,
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -610,8 +902,7 @@ class _VerificationScreenState extends State<VerificationScreen> with SingleTick
         riskIcon = Icons.warning_amber_rounded;
         break;
       case AmlRiskLevel.clear:
-      default:
-        riskColor = AppTheme.primaryGreen;
+        riskColor = const Color(0xFF00E676);
         riskTitle = 'CLEAR — NO SANCTIONS MATCH DETECTED';
         riskIcon = Icons.verified_user;
         break;
@@ -620,12 +911,12 @@ class _VerificationScreenState extends State<VerificationScreen> with SingleTick
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFF0D1424),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: riskColor.withValues(alpha: 0.4), width: 1.5),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
+            color: Colors.black.withValues(alpha: 0.2),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -650,7 +941,8 @@ class _VerificationScreenState extends State<VerificationScreen> with SingleTick
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
                   color: riskColor.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(12),
@@ -666,26 +958,32 @@ class _VerificationScreenState extends State<VerificationScreen> with SingleTick
               ),
             ],
           ),
-          const Divider(height: 24),
+          const Divider(height: 24, color: Colors.white10),
           Text(
             'Screened Query: ${res.queryName}',
-            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppTheme.navyBlue),
+            style: const TextStyle(
+                fontSize: 15, fontWeight: FontWeight.bold, color: Colors.white),
           ),
           if (res.matchedName != null) ...[
             const SizedBox(height: 6),
             Text(
               'Matched Entity: ${res.matchedName}',
-              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.redAccent),
+              style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.redAccent),
             ),
             Text(
               'Database Source: ${res.listSource} (${res.designationCategory})',
-              style: const TextStyle(fontSize: 12, color: AppTheme.textLight),
+              style: TextStyle(
+                  fontSize: 12, color: Colors.white.withValues(alpha: 0.6)),
             ),
           ],
           const SizedBox(height: 16),
           const Text(
             'Statutory Obligations under TPPA 2022:',
-            style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppTheme.navyBlue),
+            style: TextStyle(
+                fontSize: 13, fontWeight: FontWeight.bold, color: Colors.white),
           ),
           const SizedBox(height: 8),
           ...res.legalObligations.map(
@@ -694,12 +992,16 @@ class _VerificationScreenState extends State<VerificationScreen> with SingleTick
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Icon(Icons.arrow_right, size: 18, color: AppTheme.primaryGreen),
+                  const Icon(Icons.arrow_right,
+                      size: 18, color: Color(0xFF00E676)),
                   const SizedBox(width: 4),
                   Expanded(
                     child: Text(
                       item,
-                      style: const TextStyle(fontSize: 12, color: AppTheme.textLight, height: 1.4),
+                      style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.white.withValues(alpha: 0.7),
+                          height: 1.4),
                     ),
                   ),
                 ],
@@ -712,18 +1014,23 @@ class _VerificationScreenState extends State<VerificationScreen> with SingleTick
               width: double.infinity,
               child: ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF0F172A),
-                  foregroundColor: Colors.white,
+                  backgroundColor: const Color(0xFF00E676),
+                  foregroundColor: Colors.black,
                   padding: const EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10)),
                 ),
                 onPressed: () {
                   context.push('/chat');
                 },
-                icon: const Icon(Icons.auto_awesome, color: Color(0xFF00E676), size: 18),
+                icon: const Icon(Icons.auto_awesome,
+                    color: Colors.black, size: 18),
                 label: const Text(
                   'Ask AI Assistant for NFIU STR Reporting Steps →',
-                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black),
                 ),
               ),
             ),

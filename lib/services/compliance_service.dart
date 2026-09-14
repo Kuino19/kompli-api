@@ -38,7 +38,8 @@ class ComplianceService {
             .collection('users')
             .doc(uid)
             .collection('compliance')
-            .get();
+            .get()
+            .timeout(const Duration(seconds: 2));
 
         for (final id in taskIds) {
           final doc = snapshot.docs.where((d) => d.id == id).firstOrNull;

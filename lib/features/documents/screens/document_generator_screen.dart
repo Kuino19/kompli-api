@@ -4,7 +4,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:animate_do/animate_do.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
-import '../../../core/theme/app_theme.dart';
 import '../../ai_assistant/services/ai_service.dart';
 import '../../../services/billing_service.dart';
 import '../../../core/widgets/premium_sheet.dart';
@@ -31,14 +30,24 @@ class _DocumentGeneratorScreenState
     {
       'name': 'Employment Contract',
       'icon': Icons.badge_outlined,
-      'color': AppTheme.primaryGreen,
-      'fields': ['Employee Full Name', 'Job Title', 'Monthly Salary (₦)', 'Start Date'],
+      'color': const Color(0xFF00E676),
+      'fields': [
+        'Employee Full Name',
+        'Job Title',
+        'Monthly Salary (₦)',
+        'Start Date'
+      ],
     },
     {
       'name': 'Commercial Lease Agreement',
       'icon': Icons.home_work_outlined,
       'color': const Color(0xFF1ABC9C),
-      'fields': ['Landlord Name', 'Property Address', 'Lease Duration', 'Annual Rent (₦)'],
+      'fields': [
+        'Landlord Name',
+        'Property Address',
+        'Lease Duration',
+        'Annual Rent (₦)'
+      ],
     },
     {
       'name': 'Board Resolution',
@@ -50,39 +59,62 @@ class _DocumentGeneratorScreenState
       'name': 'Vendor/Service Agreement',
       'icon': Icons.handshake_outlined,
       'color': const Color(0xFFE67E22),
-      'fields': ['Vendor / Service Provider Name', 'Services to be Rendered', 'Contract Value (₦)'],
+      'fields': [
+        'Vendor / Service Provider Name',
+        'Services to be Rendered',
+        'Contract Value (₦)'
+      ],
     },
     {
       'name': 'Partnership Agreement',
       'icon': Icons.group_outlined,
       'color': const Color(0xFF2980B9),
-      'fields': ['Partner Name', 'Business Description', 'Profit-Sharing Ratio (e.g. 50/50)'],
+      'fields': [
+        'Partner Name',
+        'Business Description',
+        'Profit-Sharing Ratio (e.g. 50/50)'
+      ],
     },
     {
       'name': 'SME Website Privacy Policy',
       'icon': Icons.security_outlined,
       'color': const Color(0xFF8E44AD),
-      'fields': ['Website/App URL', 'Contact Email', 'User Data Collected (e.g. name, email, cookies)', 'Hosting Location/Country'],
+      'fields': [
+        'Website/App URL',
+        'Contact Email',
+        'User Data Collected (e.g. name, email, cookies)',
+        'Hosting Location/Country'
+      ],
     },
     {
       'name': 'SME Terms & Conditions',
       'icon': Icons.description_outlined,
       'color': const Color(0xFFD35400),
-      'fields': ['Website/App URL', 'Contact Email', 'Permitted Use Restrictions (e.g. no scraping, age 18+)', 'Refund/Cancellation Policy (e.g. no refunds, 7 days)'],
+      'fields': [
+        'Website/App URL',
+        'Contact Email',
+        'Permitted Use Restrictions (e.g. no scraping, age 18+)',
+        'Refund/Cancellation Policy (e.g. no refunds, 7 days)'
+      ],
     },
     {
       'name': 'Custom (AI Generated)',
       'icon': Icons.auto_awesome,
-      'color': AppTheme.accentYellow,
+      'color': const Color(0xFFFFB300),
       'fields': [],
     },
   ];
 
-  // Dynamic field controllers keyed by field label
   final Map<String, TextEditingController> _fieldControllers = {};
   final TextEditingController _partyAController = TextEditingController();
-  final TextEditingController _customPromptController = TextEditingController();
+  final TextEditingController _customPromptController =
+      TextEditingController();
   bool _isGenerating = false;
+  bool _hasProfileData = false;
+
+  String _rcNumber = '';
+  String _address = '';
+  String _industry = '';
 
   Map<String, dynamic> get _currentTemplate =>
       _templates.firstWhere((t) => t['name'] == _selectedTemplate);
@@ -108,17 +140,16 @@ class _DocumentGeneratorScreenState
     final address = prefs.getString('address') ?? '';
     final rcNumber = prefs.getString('rcNumber') ?? '';
     final industry = prefs.getString('industry') ?? '';
-    setState(() {
-      _partyAController.text = companyName;
-    });
-    _rcNumber = rcNumber;
-    _address = address;
-    _industry = industry;
+    if (mounted) {
+      setState(() {
+        _partyAController.text = companyName;
+        _hasProfileData = companyName.isNotEmpty;
+        _rcNumber = rcNumber;
+        _address = address;
+        _industry = industry;
+      });
+    }
   }
-
-  String _rcNumber = '';
-  String _address = '';
-  String _industry = '';
 
   String _buildPrompt() {
     final template = _selectedTemplate;
@@ -157,37 +188,31 @@ Requirements:
 $fieldData
 
 Include: definitions, obligations, exclusions, term (2 years), remedies for breach, governing law (Nigeria), dispute resolution. Format with Markdown headings and numbered clauses. End with signature blocks.''',
-
       'Employment Contract': '''Draft a formal Employment Contract compliant with Nigerian Labour Act for:
 - Employer: $companyContext
 $fieldData
 
 Include: appointment clause, duties, remuneration, leave entitlements (21 days annual), probation (3 months), termination notice (1 month), confidentiality, IP rights, pension (PENCOM compliance), governing law. Format with Markdown headings and numbered clauses. End with signature blocks.''',
-
       'Commercial Lease Agreement': '''Draft a Commercial Lease Agreement under Nigerian law (relevant state Tenancy Law, e.g. Lagos State Tenancy Law) for:
 - Tenant: $companyContext
 $fieldData
 
 Include: description of property, lease term, rent payment terms, covenants of landlord (quiet enjoyment, structural repairs), covenants of tenant (rent payment, maintenance, no alterations, user clause), termination notice, dispute resolution (mediation/arbitration), governing law (Nigeria). Format with Markdown headings and numbered clauses. End with signature blocks.''',
-
       'Board Resolution': '''Draft a formal Board Resolution for a Nigerian Private Limited Company compliant with CAMA 2020:
 - Company: $companyContext
 $fieldData
 
 Include: date of board meeting, board members present (directors), recitals, resolved clauses (e.g. to open bank account, appoint auditors, or execute agreement), authorization to execute, secretary signature block, director signature block. Format with Markdown headings and numbered clauses.''',
-
       'Vendor/Service Agreement': '''Draft a Vendor/Service Agreement under Nigerian law for:
 - Client: $companyContext
 $fieldData
 
 Include: scope of services, payment terms (30 days), invoicing, warranties, liability cap, IP ownership, termination (30 days notice), confidentiality, force majeure, governing law (Nigeria). Format with Markdown headings and numbered clauses. End with signature blocks.''',
-
       'Partnership Agreement': '''Draft a formal Partnership Agreement under Nigerian law (Partnership Law) for:
 - First Partner: $companyContext
 $fieldData
 
 Include: business purpose, capital contributions, profit/loss sharing, management roles, banking, dispute resolution (Lagos Multi-Door Courthouse or arbitration), dissolution procedure, exit clauses. Format with Markdown headings and numbered clauses. End with signature blocks.''',
-
       'SME Website Privacy Policy': '''Draft a comprehensive, professional Website and App Privacy Policy under Nigerian law, fully compliant with the Nigeria Data Protection Act (NDPA) 2023 for:
 - Company/Platform Operator: $companyContext
 $fieldData
@@ -204,7 +229,6 @@ Include:
 9. Contact Information (Contact Email)
 
 Format with clear Markdown headings and numbered sections. No preamble or chat greeting, start directly with the document title.''',
-
       'SME Terms & Conditions': '''Draft a formal, comprehensive Website and Application Terms and Conditions (Terms of Use) under Nigerian law for:
 - Company/Platform Operator: $companyContext
 $fieldData
@@ -237,17 +261,16 @@ Format with clear Markdown headings and numbered sections. No preamble or chat g
       showPremiumUpgradeSheet(
         context,
         title: 'AI Drafting Locked',
-        description: 'You have used all your free AI document drafts. Subscribe to Premium for unlimited generations or buy an AI credit pack.',
+        description:
+            'You have used all your free AI document drafts. Subscribe to Premium for unlimited generations or buy an AI credit pack.',
         creditType: 'ai',
         onPurchaseSuccess: () {
-          // Re-trigger document generation
           _generateDocument();
         },
       );
       return;
     }
 
-    // Validate
     if (_selectedTemplate == 'Custom (AI Generated)' &&
         _customPromptController.text.trim().isEmpty) {
       _showError('Please describe what you need drafted.');
@@ -276,7 +299,6 @@ Format with clear Markdown headings and numbered sections. No preamble or chat g
       if (!mounted) return;
       setState(() => _isGenerating = false);
 
-      // Check if the AI returned an error message instead of a document
       if (response.startsWith('Both AI providers failed') ||
           response.startsWith('An error occurred')) {
         _showError(
@@ -290,12 +312,10 @@ Format with clear Markdown headings and numbered sections. No preamble or chat g
         return;
       }
 
-      // Consume credit if not premium
       if (!isPremiumUser) {
         await billing.consumeAiCredit();
       }
 
-      // Log success event to Analytics
       FirebaseAnalytics.instance.logEvent(
         name: 'document_generated',
         parameters: {'template': _selectedTemplate},
@@ -336,8 +356,15 @@ Format with clear Markdown headings and numbered sections. No preamble or chat g
     final templateColor = _currentTemplate['color'] as Color;
 
     return Scaffold(
-      backgroundColor: AppTheme.backgroundLight,
-      appBar: AppBar(title: const Text('Generate Document')),
+      backgroundColor: const Color(0xFF090D1A),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF0D1424),
+        elevation: 0,
+        title: const Text(
+          'Generate Document',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
         child: Column(
@@ -349,18 +376,21 @@ Format with clear Markdown headings and numbered sections. No preamble or chat g
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Select Document Type',
-                      style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: AppTheme.navyBlue)),
+                  const Text(
+                    'Select Document Type',
+                    style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white),
+                  ),
                   const SizedBox(height: 14),
                   SizedBox(
                     height: 100,
                     child: ListView.separated(
                       scrollDirection: Axis.horizontal,
                       itemCount: _templates.length,
-                      separatorBuilder: (context, index) => const SizedBox(width: 12),
+                      separatorBuilder: (context, index) =>
+                          const SizedBox(width: 12),
                       itemBuilder: (context, index) {
                         final t = _templates[index];
                         final isSelected = _selectedTemplate == t['name'];
@@ -369,24 +399,24 @@ Format with clear Markdown headings and numbered sections. No preamble or chat g
                               setState(() => _selectedTemplate = t['name']),
                           child: AnimatedContainer(
                             duration: const Duration(milliseconds: 250),
-                            width: 100,
-                            padding: const EdgeInsets.all(14),
+                            width: 105,
+                            padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
                               color: isSelected
-                                  ? (t['color'] as Color)
-                                  : Colors.white,
+                                  ? (t['color'] as Color).withValues(alpha: 0.2)
+                                  : const Color(0xFF0D1424),
                               borderRadius: BorderRadius.circular(16),
                               border: Border.all(
                                 color: isSelected
                                     ? (t['color'] as Color)
-                                    : Colors.grey.shade200,
-                                width: 2,
+                                    : Colors.white.withValues(alpha: 0.1),
+                                width: isSelected ? 2 : 1,
                               ),
                               boxShadow: isSelected
                                   ? [
                                       BoxShadow(
                                         color: (t['color'] as Color)
-                                            .withOpacity(0.3),
+                                            .withValues(alpha: 0.3),
                                         blurRadius: 12,
                                         offset: const Offset(0, 4),
                                       )
@@ -399,23 +429,23 @@ Format with clear Markdown headings and numbered sections. No preamble or chat g
                                 Icon(
                                   t['icon'] as IconData,
                                   color: isSelected
-                                      ? Colors.white
-                                      : (t['color'] as Color),
-                                  size: 28,
+                                      ? (t['color'] as Color)
+                                      : Colors.white70,
+                                  size: 26,
                                 ),
                                 const SizedBox(height: 8),
                                 Text(
-                                  (t['name'] as String)
-                                      .split(' ')
-                                      .first,
+                                  (t['name'] as String).split(' ').first,
                                   style: TextStyle(
                                     fontSize: 11,
                                     fontWeight: FontWeight.bold,
                                     color: isSelected
                                         ? Colors.white
-                                        : AppTheme.navyBlue,
+                                        : Colors.white70,
                                   ),
                                   textAlign: TextAlign.center,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ],
                             ),
@@ -428,22 +458,23 @@ Format with clear Markdown headings and numbered sections. No preamble or chat g
               ),
             ),
 
-            const SizedBox(height: 28),
+            const SizedBox(height: 24),
 
             // AI Badge
             FadeInUp(
               duration: const Duration(milliseconds: 400),
               child: Container(
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                 decoration: BoxDecoration(
-                  color: templateColor.withOpacity(0.08),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: templateColor.withOpacity(0.3)),
+                  color: const Color(0xFF0D1424),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                      color: templateColor.withValues(alpha: 0.4), width: 1.5),
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.auto_awesome, color: templateColor, size: 18),
+                    Icon(Icons.auto_awesome, color: templateColor, size: 20),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
@@ -451,7 +482,7 @@ Format with clear Markdown headings and numbered sections. No preamble or chat g
                             ? 'AI will draft a fully custom legal document based on your description'
                             : 'AI will generate a complete, Nigeria-law compliant $_selectedTemplate using your details',
                         style: TextStyle(
-                          color: templateColor,
+                          color: Colors.white.withValues(alpha: 0.9),
                           fontSize: 13,
                           fontWeight: FontWeight.w500,
                         ),
@@ -472,10 +503,43 @@ Format with clear Markdown headings and numbered sections. No preamble or chat g
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   if (!isCustom) ...[
-                    const Text('Your Company Details',
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: AppTheme.navyBlue)),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Your Company Details',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 15,
+                              color: Colors.white),
+                        ),
+                        if (_hasProfileData)
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF00E676)
+                                  .withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Row(
+                              children: [
+                                Icon(Icons.check_circle,
+                                    color: Color(0xFF00E676), size: 14),
+                                SizedBox(width: 4),
+                                Text(
+                                  'Auto-filled from Profile',
+                                  style: TextStyle(
+                                    color: Color(0xFF00E676),
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                      ],
+                    ),
                     const SizedBox(height: 12),
                     _buildField(
                       controller: _partyAController,
@@ -489,7 +553,8 @@ Format with clear Markdown headings and numbered sections. No preamble or chat g
                           : 'Contract Details',
                       style: const TextStyle(
                           fontWeight: FontWeight.bold,
-                          color: AppTheme.navyBlue),
+                          fontSize: 15,
+                          color: Colors.white),
                     ),
                     const SizedBox(height: 12),
                     ...fields.asMap().entries.map((entry) {
@@ -506,20 +571,35 @@ Format with clear Markdown headings and numbered sections. No preamble or chat g
                     const Text('Describe your document',
                         style: TextStyle(
                             fontWeight: FontWeight.bold,
-                            color: AppTheme.navyBlue)),
+                            fontSize: 15,
+                            color: Colors.white)),
                     const SizedBox(height: 12),
                     TextField(
                       controller: _customPromptController,
                       maxLines: 6,
+                      style: const TextStyle(color: Colors.white),
                       decoration: InputDecoration(
                         hintText:
                             'e.g. A 6-month shop lease in Lagos between my company and Mr. Ade, ₦150,000/month rent, tenant pays utilities...',
-                        hintStyle: const TextStyle(fontSize: 13),
+                        hintStyle: TextStyle(
+                            fontSize: 13,
+                            color: Colors.white.withValues(alpha: 0.4)),
                         filled: true,
-                        fillColor: Colors.white,
+                        fillColor: const Color(0xFF0D1424),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(14),
-                          borderSide: BorderSide.none,
+                          borderSide: BorderSide(
+                              color: Colors.white.withValues(alpha: 0.1)),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: BorderSide(
+                              color: Colors.white.withValues(alpha: 0.1)),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide:
+                              const BorderSide(color: Color(0xFF00E676)),
                         ),
                         alignLabelWithHint: true,
                       ),
@@ -537,25 +617,26 @@ Format with clear Markdown headings and numbered sections. No preamble or chat g
               child: ElevatedButton(
                 onPressed: _isGenerating ? null : _generateDocument,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: templateColor,
+                  backgroundColor: const Color(0xFF00E676),
+                  foregroundColor: Colors.black,
                   padding: const EdgeInsets.symmetric(vertical: 18),
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16)),
                 ),
                 child: _isGenerating
-                    ? Row(
+                    ? const Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const SizedBox(
+                          SizedBox(
                             height: 20,
                             width: 20,
                             child: CircularProgressIndicator(
-                                color: Colors.white, strokeWidth: 2),
+                                color: Colors.black, strokeWidth: 2),
                           ),
-                          const SizedBox(width: 12),
-                          const Text('AI is drafting your document...',
+                          SizedBox(width: 12),
+                          Text('AI is drafting your document...',
                               style: TextStyle(
-                                  color: Colors.white,
+                                  color: Colors.black,
                                   fontWeight: FontWeight.bold)),
                         ],
                       )
@@ -563,18 +644,30 @@ Format with clear Markdown headings and numbered sections. No preamble or chat g
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Icon(Icons.auto_awesome,
-                              color: Colors.white, size: 20),
+                              color: Colors.black, size: 20),
                           SizedBox(width: 10),
                           Text('Generate with AI',
                               style: TextStyle(
-                                  color: Colors.white,
+                                  color: Colors.black,
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold)),
                         ],
                       ),
               ),
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 30),
+            Center(
+              child: Text(
+                'Built by Goanitech LTD',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.white.withValues(alpha: 0.3),
+                  fontWeight: FontWeight.w500,
+                  letterSpacing: 0.5,
+                ),
+              ),
+            ),
+            const SizedBox(height: 30),
           ],
         ),
       ),
@@ -588,23 +681,24 @@ Format with clear Markdown headings and numbered sections. No preamble or chat g
   }) {
     return TextField(
       controller: controller,
+      style: const TextStyle(color: Colors.white),
       decoration: InputDecoration(
         labelText: label,
-        prefixIcon: Icon(icon, color: AppTheme.primaryGreen, size: 20),
+        labelStyle: TextStyle(color: Colors.white.withValues(alpha: 0.6)),
+        prefixIcon: Icon(icon, color: const Color(0xFF00E676), size: 20),
         filled: true,
-        fillColor: Colors.white,
+        fillColor: const Color(0xFF0D1424),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide.none,
+          borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: Colors.grey.shade200),
+          borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide:
-              const BorderSide(color: AppTheme.primaryGreen, width: 2),
+          borderSide: const BorderSide(color: Color(0xFF00E676), width: 2),
         ),
       ),
     );
@@ -626,10 +720,13 @@ Format with clear Markdown headings and numbered sections. No preamble or chat g
     if (f.contains('duration') || f.contains('term') || f.contains('period')) {
       return Icons.access_time_outlined;
     }
-    if (f.contains('service') || f.contains('purpose') || f.contains('business')) {
+    if (f.contains('service') ||
+        f.contains('purpose') ||
+        f.contains('business')) {
       return Icons.description_outlined;
     }
-    if (f.contains('ratio') || f.contains('profit')) return Icons.pie_chart_outline;
+    if (f.contains('ratio') || f.contains('profit'))
+      return Icons.pie_chart_outline;
     return Icons.edit_outlined;
   }
 }

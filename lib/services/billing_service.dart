@@ -47,11 +47,14 @@ class BillingService {
     if (uid == null) return false;
 
     try {
-      final doc = await _firestore.collection('users').doc(uid).get();
+      final doc = await _firestore
+          .collection('users')
+          .doc(uid)
+          .get()
+          .timeout(const Duration(seconds: 2));
       if (!doc.exists) return false;
       final data = doc.data()!;
       final isPrem = data['isPremium'] as bool? ?? false;
-      // Validate subscription expiry if present
       final expiresAt = data['premiumExpiresAt'] as Timestamp?;
       if (isPrem && expiresAt != null) {
         return expiresAt.toDate().isAfter(DateTime.now());
@@ -77,7 +80,11 @@ class BillingService {
     if (uid == null) return {'cac': 2, 'ai': 5};
 
     try {
-      final doc = await _firestore.collection('users').doc(uid).get();
+      final doc = await _firestore
+          .collection('users')
+          .doc(uid)
+          .get()
+          .timeout(const Duration(seconds: 2));
       if (!doc.exists) {
         await _initDefaultCredits(uid);
         return {'cac': 2, 'ai': 5};
@@ -86,7 +93,6 @@ class BillingService {
       final cac = (data['cac_credits'] as int?) ?? 2;
       final ai = (data['ai_credits'] as int?) ?? 5;
 
-      // Initialize missing fields
       if (data['cac_credits'] == null || data['ai_credits'] == null) {
         await _initDefaultCredits(uid);
       }
@@ -98,10 +104,14 @@ class BillingService {
   }
 
   Future<void> _initDefaultCredits(String uid) async {
-    await _firestore.collection('users').doc(uid).set({
-      'cac_credits': 2,
-      'ai_credits': 5,
-    }, SetOptions(merge: true));
+    try {
+      await _firestore.collection('users').doc(uid).set({
+        'cac_credits': 2,
+        'ai_credits': 5,
+      }, SetOptions(merge: true)).timeout(const Duration(seconds: 2));
+    } catch (e) {
+      debugPrint('BillingService: _initDefaultCredits failed: $e');
+    }
   }
 
   /// Returns true if user has at least 1 credit of the given type.

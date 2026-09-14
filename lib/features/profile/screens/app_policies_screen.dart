@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../../core/theme/app_theme.dart';
 
 class AppPoliciesScreen extends StatefulWidget {
   const AppPoliciesScreen({super.key});
@@ -8,7 +7,8 @@ class AppPoliciesScreen extends StatefulWidget {
   State<AppPoliciesScreen> createState() => _AppPoliciesScreenState();
 }
 
-class _AppPoliciesScreenState extends State<AppPoliciesScreen> with SingleTickerProviderStateMixin {
+class _AppPoliciesScreenState extends State<AppPoliciesScreen>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
@@ -34,14 +34,17 @@ class _AppPoliciesScreenState extends State<AppPoliciesScreen> with SingleTicker
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.backgroundLight,
+      backgroundColor: const Color(0xFF090D1A),
       appBar: AppBar(
-        title: const Text('Policies & Terms'),
+        backgroundColor: const Color(0xFF0D1424),
+        elevation: 0,
+        title: const Text('Policies & Terms',
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         bottom: TabBar(
           controller: _tabController,
-          labelColor: AppTheme.navyBlue,
-          unselectedLabelColor: AppTheme.textLight,
-          indicatorColor: AppTheme.primaryGreen,
+          labelColor: const Color(0xFF00E676),
+          unselectedLabelColor: Colors.white60,
+          indicatorColor: const Color(0xFF00E676),
           indicatorWeight: 3,
           tabs: const [
             Tab(
@@ -57,38 +60,41 @@ class _AppPoliciesScreenState extends State<AppPoliciesScreen> with SingleTicker
       ),
       body: Column(
         children: [
-          // Premium Search Bar
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
             child: TextField(
               controller: _searchController,
+              style: const TextStyle(color: Colors.white),
               decoration: InputDecoration(
                 hintText: 'Search policies...',
-                prefixIcon: const Icon(Icons.search, color: AppTheme.primaryGreen),
+                hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.4)),
+                prefixIcon:
+                    const Icon(Icons.search, color: Color(0xFF00E676)),
                 suffixIcon: _searchQuery.isNotEmpty
                     ? IconButton(
-                        icon: const Icon(Icons.clear),
+                        icon: const Icon(Icons.clear, color: Colors.white70),
                         onPressed: () => _searchController.clear(),
                       )
                     : null,
                 filled: true,
-                fillColor: Colors.white,
+                fillColor: const Color(0xFF0D1424),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide.none,
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.grey.shade200),
+                  borderSide:
+                      BorderSide(color: Colors.white.withValues(alpha: 0.1)),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: AppTheme.primaryGreen, width: 2),
+                  borderSide:
+                      const BorderSide(color: Color(0xFF00E676), width: 2),
                 ),
               ),
             ),
           ),
-          
           Expanded(
             child: TabBarView(
               controller: _tabController,
@@ -107,27 +113,33 @@ class _AppPoliciesScreenState extends State<AppPoliciesScreen> with SingleTicker
     final sections = [
       _PolicySection(
         title: '1. Introduction & Scope',
-        content: 'Welcome to Kompli. We are committed to protecting the private data of your business and stakeholders. In compliance with the Nigeria Data Protection Act (NDPA) 2023, this Privacy Policy outlines how we collect, process, secure, and dispose of your information.',
+        content:
+            'Welcome to Kompli. We are committed to protecting the private data of your business and stakeholders. In compliance with the Nigeria Data Protection Act (NDPA) 2023, this Privacy Policy outlines how we collect, process, secure, and dispose of your information.',
       ),
       _PolicySection(
         title: '2. Local-First & Zero-Knowledge Architecture',
-        content: 'Kompli operates primarily on a local-first storage model. Generated documents, signatures, business profile information, and passcodes are stored securely directly on your device\'s local storage using encrypted preferences. We do not upload your raw contracts or business identification documents to our servers unless you explicitly request cloud backup or sharing features.',
+        content:
+            'Kompli operates primarily on a local-first storage model. Generated documents, signatures, business profile information, and passcodes are stored securely directly on your device\'s local storage using encrypted preferences. We do not upload your raw contracts or business identification documents to our servers unless you explicitly request cloud backup or sharing features.',
       ),
       _PolicySection(
         title: '3. Data Collection & Processing',
-        content: 'When using Kompli, we collect and process the following information:\n• Business Profile Data: Company Name, Industry, RC/BN Number, TIN, and Address (used to pre-fill templates).\n• Electronic Signatures: Saved as local image assets to apply to PDFs.\n• Temporary AI Context: Text prompts and documents are temporarily sent to Gemini/Groq APIs for generating and customising documents. This data is not used to train the base models.',
+        content:
+            'When using Kompli, we collect and process the following information:\n• Business Profile Data: Company Name, Industry, RC/BN Number, TIN, and Address (used to pre-fill templates).\n• Electronic Signatures: Saved as local image assets to apply to PDFs.\n• Temporary AI Context: Text prompts and documents are temporarily sent to Gemini/Groq APIs for generating and customising documents. This data is not used to train the base models.',
       ),
       _PolicySection(
         title: '4. Compliance with NDPA 2023',
-        content: 'In accordance with the Nigeria Data Protection Act (NDPA) 2023, we guarantee:\n• Consent: We only process business info that you voluntarily submit.\n• Security: Implementation of passcode lock mechanisms to protect saved contracts.\n• Data Minimisation: We only request and save information strictly necessary for document generation and compliance tracking.',
+        content:
+            'In accordance with the Nigeria Data Protection Act (NDPA) 2023, we guarantee:\n• Consent: We only process business info that you voluntarily submit.\n• Security: Implementation of passcode lock mechanisms to protect saved contracts.\n• Data Minimisation: We only request and save information strictly necessary for document generation and compliance tracking.',
       ),
       _PolicySection(
         title: '5. Your Rights as a Data Subject',
-        content: 'Under the NDPA 2023, you have the right to access, rectify, or request the erasure of your personal data. You can delete all your stored profile information and local documents at any time by clearing the application storage or resetting the profile settings in-app.',
+        content:
+            'Under the NDPA 2023, you have the right to access, rectify, or request the erasure of your personal data. You can delete all your stored profile information and local documents at any time by clearing the application storage or resetting the profile settings in-app.',
       ),
       _PolicySection(
         title: '6. Updates to this Policy',
-        content: 'We may revise this Privacy Policy periodically. We will notify you of any changes by updating the "Last Updated" date at the bottom of this page and posting a notification on the Dashboard.',
+        content:
+            'We may revise this Privacy Policy periodically. We will notify you of any changes by updating the "Last Updated" date at the bottom of this page and posting a notification on the Dashboard.',
       ),
     ];
 
@@ -140,7 +152,7 @@ class _AppPoliciesScreenState extends State<AppPoliciesScreen> with SingleTicker
       title: 'Nigeria Data Protection Act (NDPA) 2023 Compliant',
       subtitle: 'Last Updated: June 11, 2026',
       badgeText: 'NDPA COMPLIANT',
-      badgeColor: AppTheme.primaryGreen,
+      badgeColor: const Color(0xFF00E676),
       sections: filteredSections,
     );
   }
@@ -149,27 +161,33 @@ class _AppPoliciesScreenState extends State<AppPoliciesScreen> with SingleTicker
     final sections = [
       _PolicySection(
         title: '1. Acceptance of Terms',
-        content: 'By accessing or using the Kompli mobile application, you agree to comply with and be bound by these Terms of Service. If you do not agree, please do not use the app.',
+        content:
+            'By accessing or using the Kompli mobile application, you agree to comply with and be bound by these Terms of Service. If you do not agree, please do not use the app.',
       ),
       _PolicySection(
         title: '2. Description of Service & Legal Disclaimer',
-        content: 'Kompli is an automated compliance management and document generator tool. The legal templates, NDA generators, website terms, and compliance trackers provided are for educational and business guidance purposes only. Kompli is NOT a law firm and does NOT provide formal legal advice. Use of these materials does not establish an attorney-client relationship. You are encouraged to review generated agreements with a qualified legal practitioner in Nigeria before final execution.',
+        content:
+            'Kompli is an automated compliance management and document generator tool. The legal templates, NDA generators, website terms, and compliance trackers provided are for educational and business guidance purposes only. Kompli is NOT a law firm and does NOT provide formal legal advice. Use of these materials does not establish an attorney-client relationship. You are encouraged to review generated agreements with a qualified legal practitioner in Nigeria before final execution.',
       ),
       _PolicySection(
         title: '3. Passcode Lock & Security Responsibility',
-        content: 'You are solely responsible for maintaining the confidentiality of your Vault Passcode (PIN). If you enable passcode protection, ensure you choose a secure code. Kompli is not responsible for unauthorised access to your device or local database due to weak security practices.',
+        content:
+            'You are solely responsible for maintaining the confidentiality of your Vault Passcode (PIN). If you enable passcode protection, ensure you choose a secure code. Kompli is not responsible for unauthorised access to your device or local database due to weak security practices.',
       ),
       _PolicySection(
         title: '4. Third-Party Integrations',
-        content: 'Kompli links with external APIs (including Mono, Dojah, Gemini, and Groq) to provide company verification and AI assistance. While we make every effort to ensure sandbox and live services are reliable, we are not liable for downtime, API rate limit restrictions, or inaccurate registry responses from the CAC or FIRS.',
+        content:
+            'Kompli links with external APIs (including Mono, Dojah, Gemini, and Groq) to provide company verification and AI assistance. While we make every effort to ensure sandbox and live services are reliable, we are not liable for downtime, API rate limit restrictions, or inaccurate registry responses from the CAC or FIRS.',
       ),
       _PolicySection(
         title: '5. Limitation of Liability',
-        content: 'To the maximum extent permitted by Nigerian law, Kompli shall not be liable for any direct, indirect, incidental, or consequential damages resulting from the use or inability to use the application, including document generation errors, missed regulatory deadlines, or data loss.',
+        content:
+            'To the maximum extent permitted by Nigerian law, Kompli shall not be liable for any direct, indirect, incidental, or consequential damages resulting from the use or inability to use the application, including document generation errors, missed regulatory deadlines, or data loss.',
       ),
       _PolicySection(
         title: '6. Governing Law',
-        content: 'These Terms of Service are governed by and construed in accordance with the laws of the Federal Republic of Nigeria. Any disputes arising under these terms shall be subject to the exclusive jurisdiction of the competent courts of Nigeria.',
+        content:
+            'These Terms of Service are governed by and construed in accordance with the laws of the Federal Republic of Nigeria. Any disputes arising under these terms shall be subject to the exclusive jurisdiction of the competent courts of Nigeria.',
       ),
     ];
 
@@ -182,7 +200,7 @@ class _AppPoliciesScreenState extends State<AppPoliciesScreen> with SingleTicker
       title: 'Standard Terms & Business Agreements',
       subtitle: 'Last Updated: June 11, 2026',
       badgeText: 'LEGAL DISCLAIMER',
-      badgeColor: AppTheme.accentYellow,
+      badgeColor: const Color(0xFFFFB300),
       sections: filteredSections,
     );
   }
@@ -195,23 +213,27 @@ class _AppPoliciesScreenState extends State<AppPoliciesScreen> with SingleTicker
     required List<_PolicySection> sections,
   }) {
     if (sections.isEmpty) {
-      return const Center(
+      return Center(
         child: Padding(
-          padding: EdgeInsets.all(24.0),
+          padding: const EdgeInsets.all(24.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.search_off_outlined, size: 64, color: AppTheme.textLight),
-              SizedBox(height: 16),
-              Text(
+              const Icon(Icons.search_off_outlined,
+                  size: 64, color: Colors.white38),
+              const SizedBox(height: 16),
+              const Text(
                 'No matching clauses found',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppTheme.navyBlue),
+                style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    color: Colors.white),
               ),
-              SizedBox(height: 8),
+              const SizedBox(height: 8),
               Text(
                 'Try searching for another keyword or clear the query.',
                 textAlign: TextAlign.center,
-                style: TextStyle(color: AppTheme.textLight),
+                style: TextStyle(color: Colors.white.withValues(alpha: 0.6)),
               ),
             ],
           ),
@@ -222,23 +244,13 @@ class _AppPoliciesScreenState extends State<AppPoliciesScreen> with SingleTicker
     return ListView(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       children: [
-        // Compliance Banner
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [AppTheme.navyBlue, AppTheme.navyBlue.withOpacity(0.85)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
+            color: const Color(0xFF0D1424),
             borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: AppTheme.navyBlue.withOpacity(0.1),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
+            border:
+                Border.all(color: Colors.white.withValues(alpha: 0.08)),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -257,7 +269,8 @@ class _AppPoliciesScreenState extends State<AppPoliciesScreen> with SingleTicker
                     ),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
                       color: badgeColor,
                       borderRadius: BorderRadius.circular(8),
@@ -265,7 +278,7 @@ class _AppPoliciesScreenState extends State<AppPoliciesScreen> with SingleTicker
                     child: Text(
                       badgeText,
                       style: const TextStyle(
-                        color: Colors.white,
+                        color: Colors.black,
                         fontSize: 10,
                         fontWeight: FontWeight.bold,
                       ),
@@ -277,7 +290,7 @@ class _AppPoliciesScreenState extends State<AppPoliciesScreen> with SingleTicker
               Text(
                 subtitle,
                 style: TextStyle(
-                  color: Colors.white.withOpacity(0.7),
+                  color: Colors.white.withValues(alpha: 0.6),
                   fontSize: 12,
                 ),
               ),
@@ -285,22 +298,14 @@ class _AppPoliciesScreenState extends State<AppPoliciesScreen> with SingleTicker
           ),
         ),
         const SizedBox(height: 16),
-
-        // Policy Items
         ...sections.map((sec) => Container(
               margin: const EdgeInsets.only(bottom: 12),
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: const Color(0xFF0D1424),
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.grey.shade100),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.01),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
+                border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.08)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -310,15 +315,15 @@ class _AppPoliciesScreenState extends State<AppPoliciesScreen> with SingleTicker
                     style: const TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.bold,
-                      color: AppTheme.navyBlue,
+                      color: Color(0xFF00E676),
                     ),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     sec.content,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 13,
-                      color: Colors.black87,
+                      color: Colors.white.withValues(alpha: 0.85),
                       height: 1.5,
                     ),
                   ),
@@ -331,7 +336,7 @@ class _AppPoliciesScreenState extends State<AppPoliciesScreen> with SingleTicker
             'Built by Goanitech LTD',
             style: TextStyle(
               fontSize: 12,
-              color: Colors.grey.shade400,
+              color: Colors.white.withValues(alpha: 0.3),
               fontWeight: FontWeight.w500,
               letterSpacing: 0.5,
             ),
